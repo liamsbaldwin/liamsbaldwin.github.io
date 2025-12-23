@@ -15,12 +15,18 @@
 :root {
   --max-width: 1100px;
   --gap: 48px;
+  --body-font-size: 21.5px; /* <-- your original text size */
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
-  font-family: "CMU Sans", system-ui, sans-serif;
+  margin: 0;
+  font-family: "CMU Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: var(--body-font-size);  /* <-- makes body text consistent */
+  line-height: 1.55;
 }
 
 .page {
@@ -32,7 +38,7 @@ body {
 .layout {
   display: flex;
   gap: var(--gap);
-  align-items: center; /* key: vertically centers the photo against the text block */
+  align-items: center; /* vertically centers photo against the text block */
 }
 
 /* photo column: stack + centered */
@@ -40,13 +46,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 0 0 auto;
 }
 
 /* image itself */
 .photo {
   display: block;
-  max-width: 280px;   /* adjust to taste */
-  width: 100%;
+  width: 280px;      /* fixed visual width */
+  max-width: 100%;   /* don’t overflow on small screens */
   height: auto;
 }
 
@@ -58,23 +65,25 @@ body {
   text-align: center;
 }
 
-
+/* content should expand and be allowed to get wide */
 .content {
-  max-width: 720px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 820px; /* widen your text block (adjust as you like) */
 }
-
-p {
-  max-width: none;
-  font-size: 21.5px;
-}
-
 
 h1 {
   margin: 0 0 18px 0;
   font-size: 56px;
   letter-spacing: 0.2px;
+  line-height: 1.05;
 }
 
+p {
+  margin: 0 0 22px 0;
+  font-size: inherit; /* inherit from body (21.5px) */
+  max-width: none;
+}
 
 .links a {
   color: #0645ad;
@@ -87,15 +96,25 @@ h1 {
 
 /* Mobile: stack photo above text */
 @media (max-width: 820px) {
+  :root {
+    --body-font-size: 18px; /* mobile body text size */
+  }
+
   .layout {
     flex-direction: column;
     align-items: flex-start;
     gap: 18px;
   }
+
   .photo-col {
     width: min(320px, 100%);
-    flex-basis: auto;
   }
-  h1 { font-size: 40px; }
-  p { font-size: 18px; }
+
+  .photo {
+    width: min(320px, 100%);
+  }
+
+  h1 {
+    font-size: 40px;
+  }
 }
