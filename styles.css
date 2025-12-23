@@ -1,0 +1,77 @@
+:root {
+  --max-width: 1100px;
+  --gap: 48px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: #111;
+  background: #fff;
+}
+
+.page {
+  max-width: var(--max-width);
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+.layout {
+  display: flex;
+  gap: var(--gap);
+  align-items: center; /* key: vertically centers the photo against the text block */
+}
+
+.photo-col {
+  flex: 0 0 280px; /* fixed column like the screenshot */
+}
+
+.photo {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;
+}
+
+.content {
+  flex: 1 1 auto;
+}
+
+h1 {
+  margin: 0 0 18px 0;
+  font-size: 56px;
+  letter-spacing: 0.2px;
+}
+
+p {
+  font-size: 22px;
+  line-height: 1.6;
+  margin: 0 0 18px 0;
+  max-width: 52ch;
+}
+
+.links a {
+  color: #0645ad;
+  text-decoration: underline;
+}
+
+.links a:hover {
+  opacity: 0.85;
+}
+
+/* Mobile: stack photo above text */
+@media (max-width: 820px) {
+  .layout {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .photo-col {
+    width: min(320px, 100%);
+    flex-basis: auto;
+  }
+  h1 { font-size: 40px; }
+  p { font-size: 18px; }
+}
