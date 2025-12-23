@@ -135,3 +135,43 @@ h2 {
 .reading-list li {
   margin-bottom: 10px;
 }
+
+/* --- Row of book covers (Currently reading) --- */
+
+.book-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 18px;
+  max-width: 560px; /* keeps it tight and intentional */
+}
+
+.book {
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.book img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Hover: lift + glow */
+.book:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 0 0 3px rgba(80, 170, 255, 0.25),
+    0 10px 25px rgba(0, 0, 0, 0.55);
+}
+
+/* Dim others when hovering the row (optional but nice) */
+.book-row:hover .book {
+  opacity: 0.7;
+}
+.book-row:hover .book:hover {
+  opacity: 1;
+}
+
