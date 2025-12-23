@@ -60,8 +60,13 @@ body {
 
 
 .content {
-  flex: 1 1 auto;
+  max-width: 720px;
 }
+
+p {
+  max-width: none;
+}
+
 
 h1 {
   margin: 0 0 18px 0;
@@ -69,12 +74,6 @@ h1 {
   letter-spacing: 0.2px;
 }
 
-p {
-  font-size: 22px;
-  line-height: 1.6;
-  margin: 0 0 18px 0;
-  max-width: 70ch;
-}
 
 .links a {
   color: #0645ad;
