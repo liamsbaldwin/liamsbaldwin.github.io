@@ -224,3 +224,50 @@ h2 {
   .book-title { font-size: 24px; }
   .book-author { font-size: 18px; }
 }
+
+
+/* --- Dark mode --- */
+:root {
+  --bg: #ffffff;
+  --text: #000000;
+}
+
+/* main page colors */
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* dark theme overrides */
+.dark {
+  --bg: #1f1f1f;     /* dark grey */
+  --text: #ffffff;   /* white text */
+}
+
+/* links stay the same color (you already set a { color: #1a73e8; }) */
+/* If you ever add other link styles elsewhere, this forces it: */
+a { color: #1a73e8; }
+
+/* moon button */
+.theme-toggle {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: #1a73e8; /* matches links */
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.theme-toggle:hover { opacity: 1; }
+
+/* optional: make it a touch easier to see on light backgrounds */
+.theme-toggle {
+  backdrop-filter: blur(6px);
+}
