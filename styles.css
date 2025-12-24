@@ -312,24 +312,26 @@ a { color: #1a73e8; }
 /* moon button */
 .theme-toggle {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
-  width: 34px;
-  height: 34px;
+  right: 18px;
+  bottom: 18px;
+
+  width: 38px;
+  height: 38px;
   padding: 0;
-  border: 1px solid rgba(0,0,0,0.18);
+
+  border: none;                 /* ← removes outline */
   border-radius: 999px;
-  background: rgba(255,255,255,0.65);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(6px);
 
-  display: flex;                 /* ← change */
-  align-items: center;           /* ← change */
-  justify-content: center;       /* ← change */
+  display: grid;                /* ← true centering */
+  place-items: center;          /* ← true centering */
 
   cursor: pointer;
-  z-index: 9999;
-  transition: background-color 220ms ease, border-color 220ms ease, transform 120ms ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
+
 
 .theme-toggle:hover { opacity: 1; }
 
@@ -338,10 +340,10 @@ a { color: #1a73e8; }
   backdrop-filter: blur(6px);
 }
 
-.moon-icon {
+.theme-toggle svg {
+  display: block;               /* ← kills inline SVG baseline offset */
   width: 18px;
   height: 18px;
-  display: block;
-  transform: translateX(0.5px); /* optical centering */
 }
+
 
