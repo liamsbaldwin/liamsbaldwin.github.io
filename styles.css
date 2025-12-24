@@ -201,10 +201,11 @@ h2 {
 
 .book-row {
   display: flex;
-  gap: 28px;                 /* slightly tighter */
-  align-items: flex-start;
   flex-wrap: wrap;
+  gap: 28px;
+  align-items: flex-start;
 }
+
 
 /* Card sizing: a bit smaller than before */
 .book-card {
@@ -283,9 +284,18 @@ h2 {
 
 /* Mobile */
 @media (max-width: 820px) {
-  .book-card { width: 200px; }
-  .book-title { font-size: 24px; }
-  .book-author { font-size: 18px; }
+  /* 2 books per row, sized to the viewport */
+  .book-row {
+    gap: 16px;
+  }
+
+  .book-card {
+    width: calc((100% - 16px) / 2);  /* two columns with one gap */
+    max-width: 240px;                /* optional: keeps them from getting huge */
+  }
+
+  .book-title { font-size: 22px; }
+  .book-author { font-size: 16px; }
 }
 
 
