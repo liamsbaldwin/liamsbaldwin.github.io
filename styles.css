@@ -227,6 +227,56 @@ sup a {
   text-decoration: none;
 }
 
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: inherit;
+}
+
+table caption {
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+th, td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+html.dark th,
+html.dark td {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+th {
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html.dark th {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+tr:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+html.dark tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.table-note {
+  font-size: 0.85em;
+  margin-top: 8px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
 /* --- Row of book covers (Currently reading) --- */
 
 .book-row {
