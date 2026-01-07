@@ -356,9 +356,16 @@ html.dark .book-card:focus-visible {
 
   .book-title { font-size: 22px; }
   .book-author { font-size: 16px; }
+
+  /* Mobile review link - keep hover behavior */
   .review-link {
     font-size: 11px;
     margin-top: 6px;
+    opacity: 0;
+  }
+
+  .book-item:hover .review-link {
+    opacity: 1;
   }
 }
 
