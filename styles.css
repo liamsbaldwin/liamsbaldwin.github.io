@@ -227,6 +227,16 @@ sup a {
   text-decoration: none;
 }
 
+/* Footnote number styling */
+.footnotes sup {
+  font-size: 1em;
+  vertical-align: baseline;
+}
+
+.footnotes sup a {
+  color: inherit;
+}
+
 /* Blockquotes */
 blockquote {
   margin: 24px 0;
