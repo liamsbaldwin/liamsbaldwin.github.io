@@ -203,6 +203,13 @@ h2 {
   align-items: flex-start;
 }
 
+/* Book item wrapper (contains card + review link) */
+.book-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* Card sizing: a bit smaller than before */
 .book-card {
   position: relative;
@@ -268,11 +275,6 @@ html.dark .book-card:focus-visible {
   pointer-events: none; /* lets taps/focus go to the card */
 }
 
-/* Allow clicks on the review link */
-.book-overlay .review-link {
-  pointer-events: auto;
-}
-
 /* Hover OR tap-focus: blur + darken + grow + show overlay */
 .book-card:hover img,
 .book-card:focus img,
@@ -317,15 +319,14 @@ html.dark .book-card:focus-visible {
 }
 
 .review-link {
-  margin-top: 12px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.95);
+  margin-top: 8px;
+  font-size: 13px;
+  color: inherit;
   text-decoration: none;
   transition: opacity 180ms ease;
 }
 
 .review-link:hover {
-  opacity: 0.8;
   text-decoration: underline;
 }
 
@@ -336,8 +337,12 @@ html.dark .book-card:focus-visible {
     gap: 16px;
   }
 
-  .book-card {
+  .book-item {
     width: calc((100% - 16px) / 2); /* two columns with one gap */
+  }
+
+  .book-card {
+    width: 100%;
     max-width: none;                /* IMPORTANT: allow shrink to fit */
     min-width: 0;                   /* IMPORTANT: allow shrink in flex */
   }
@@ -345,8 +350,8 @@ html.dark .book-card:focus-visible {
   .book-title { font-size: 22px; }
   .book-author { font-size: 16px; }
   .review-link {
-    font-size: 12px;
-    margin-top: 10px;
+    font-size: 11px;
+    margin-top: 6px;
   }
 }
 
