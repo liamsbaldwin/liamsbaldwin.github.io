@@ -268,6 +268,11 @@ html.dark .book-card:focus-visible {
   pointer-events: none; /* lets taps/focus go to the card */
 }
 
+/* Allow clicks on the review link */
+.book-overlay .review-link {
+  pointer-events: auto;
+}
+
 /* Hover OR tap-focus: blur + darken + grow + show overlay */
 .book-card:hover img,
 .book-card:focus img,
@@ -311,6 +316,24 @@ html.dark .book-card:focus-visible {
   color: rgba(255, 255, 255, 0.9);
 }
 
+.review-link {
+  margin-top: 16px;
+  padding: 8px 16px;
+  font-size: 16px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 180ms ease, transform 120ms ease;
+  backdrop-filter: blur(4px);
+}
+
+.review-link:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.05);
+  text-decoration: none;
+}
+
 /* Mobile */
 @media (max-width: 820px) {
   /* 2 books per row, sized to the viewport */
@@ -326,6 +349,11 @@ html.dark .book-card:focus-visible {
 
   .book-title { font-size: 22px; }
   .book-author { font-size: 16px; }
+  .review-link {
+    font-size: 14px;
+    padding: 6px 12px;
+    margin-top: 12px;
+  }
 }
 
 /* --- Dark mode (legacy vars kept, but harmless) --- */
