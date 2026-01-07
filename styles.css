@@ -227,6 +227,32 @@ sup a {
   text-decoration: none;
 }
 
+/* Blockquotes */
+blockquote {
+  margin: 24px 0;
+  padding-left: 24px;
+  border-left: 3px solid rgba(0, 0, 0, 0.15);
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+html.dark blockquote {
+  border-left-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Date metadata */
+.date-meta {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.5);
+  margin-top: -8px;
+  margin-bottom: 20px;
+}
+
+html.dark .date-meta {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /* Tables */
 table {
   width: 100%;
