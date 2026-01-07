@@ -321,7 +321,7 @@ html.dark .book-card:focus-visible {
 .review-link {
   margin-top: 8px;
   font-size: 13px;
-  color: inherit;
+  color: rgba(255, 255, 255, 0.95);
   text-decoration: none;
   opacity: 0;
   transition: opacity 180ms ease, transform 180ms ease;
