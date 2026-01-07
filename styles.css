@@ -194,6 +194,32 @@ h2 {
   margin-bottom: 10px;
 }
 
+/* Footnotes */
+.footnotes {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 0.9em;
+}
+
+html.dark .footnotes {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.footnotes p {
+  margin-bottom: 16px;
+}
+
+.footnotes img {
+  max-width: 100%;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+sup a {
+  text-decoration: none;
+}
+
 /* --- Row of book covers (Currently reading) --- */
 
 .book-row {
