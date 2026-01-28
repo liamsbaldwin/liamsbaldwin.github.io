@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://liamsbaldwin.github.io/sitemap.xml
