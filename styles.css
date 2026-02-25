@@ -113,10 +113,14 @@ body {
   display: block;
   width: 280px;      /* fixed visual width */
   max-width: 100%;   /* don't overflow on small screens */
-  height: 320px;     /* fixed height for vertical crop */
+  height: 350px;     /* fixed height for vertical crop */
   object-fit: cover; /* crop to fit */
-  object-position: top; /* keep face visible at top */
-  border: 1px solid #555; /* thin dark grey border */
+  object-position: center; /* crop equally from top and bottom */
+  border: 1.5px solid #555; /* thin dark grey border */
+}
+
+html.dark .photo {
+  border-color: #aaa; /* light grey in dark mode */
 }
 
 /* caption under the image */
@@ -174,7 +178,7 @@ a:hover {
 
   .photo {
     width: min(320px, 100%);
-    height: 340px;   /* slightly taller on mobile for better proportions */
+    height: 370px;   /* slightly taller on mobile for better proportions */
   }
 
   h1 {
