@@ -116,7 +116,7 @@ body {
   max-width: 100%;   /* don't overflow on small screens */
   height: 350px;     /* fixed height for vertical crop */
   object-fit: cover; /* crop to fit */
-  object-position: center 40%; /* shifted up slightly */
+  object-position: center 35%; /* shifted up slightly */
   border: 2.25px solid #555; /* dark grey border */
 }
 
