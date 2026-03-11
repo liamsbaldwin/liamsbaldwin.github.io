@@ -121,16 +121,17 @@
         color: rgba(255,255,255,0.50);
       }
       .recent-item.open .recent-desc {
-        max-height: 2000px;
+        max-height: none;
         opacity: 1;
         padding-top: 2px;
         padding-bottom: 10px;
+        overflow: visible;
       }
       .recent-desc iframe {
         display: block;
         margin: 10px auto 0;
         width: 100%;
-        height: 800px;
+        min-height: 1400px;
         border: none;
         overflow: hidden;
         background: transparent;
@@ -355,7 +356,7 @@
             const btnActiveBg = dark ? "rgba(80,180,255,0.2)" : "rgba(0,120,255,0.1)";
             const btnActiveColor = dark ? "#5cc8ff" : "#0070e0";
             const accent = dark ? "#5cc8ff" : "#0070e0";
-            const hrColor = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+            const hrColor = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)";
 
             style.textContent = `
               /* Global */
@@ -468,9 +469,10 @@
             `;
 
             // Resize iframe to content
-            iframe.style.height = doc.documentElement.scrollHeight + "px";
+            const h = doc.documentElement.scrollHeight;
+            iframe.style.height = Math.max(h, 1400) + "px";
           } catch (e) {
-            iframe.style.height = "800px";
+            iframe.style.height = "1400px";
           }
         }
 
