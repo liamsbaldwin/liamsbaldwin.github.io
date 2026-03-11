@@ -277,13 +277,18 @@
       (function () {
         const now = new Date();
         const cutoff = new Date(now.getFullYear(), now.getMonth() - 4, 1);
-        document.querySelectorAll(".recent-item[data-date]").forEach((item) => {
+        const items = document.querySelectorAll(".recent-item[data-date]");
+        let lastVisible = null;
+        items.forEach((item) => {
           const [y, m] = item.dataset.date.split("-").map(Number);
           const entryDate = new Date(y, m - 1, 1);
           if (entryDate < cutoff) {
             item.style.display = "none";
+          } else {
+            lastVisible = item;
           }
         });
+        if (lastVisible) lastVisible.style.borderBottom = "none";
       })();
 
       // Expand/collapse descriptions
