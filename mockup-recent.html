@@ -367,15 +367,11 @@
               /* Global */
               html, body { background: transparent !important; color: ${fg} !important; }
               body { transform: scale(0.85); transform-origin: top center; }
+              /* Global border color — fixes dividers (border-bottom on containers) */
+              * { border-color: ${cardBorder} !important; }
               hr, [class*="divider"], [class*="separator"], [class*="Divider"] {
-                border-color: ${hrColor} !important;
-                border-top-color: ${hrColor} !important;
-                border-bottom-color: ${hrColor} !important;
-                border-left-color: ${hrColor} !important;
-                border-right-color: ${hrColor} !important;
-                background: ${hrColor} !important;
-                background-color: ${hrColor} !important;
-                color: ${hrColor} !important;
+                background: ${cardBorder} !important;
+                background-color: ${cardBorder} !important;
                 opacity: 1 !important;
               }
 
@@ -454,13 +450,11 @@
                 color: ${dark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.55)"} !important;
               }
 
-              /* Stat cards — transparent bg, keep rounded border outline */
+              /* Stat cards — transparent bg, no added stroke */
               [class*="card"], [class*="stat"], [class*="metric"],
               [class*="Card"], [class*="Stat"] {
                 background: transparent !important;
                 background-color: transparent !important;
-                border: 1px solid ${cardBorder} !important;
-                border-radius: 8px !important;
                 color: ${fg} !important;
               }
               [class*="card"] h2, [class*="card"] h3, [class*="card"] [class*="value"],
@@ -578,14 +572,18 @@
 
         function fixDividers(doc) {
           const dark = document.documentElement.classList.contains("dark");
-          const hrColor = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+          const c = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+          // Fix hr elements
           doc.querySelectorAll("hr").forEach(hr => {
-            hr.style.setProperty("border-color", hrColor, "important");
-            hr.style.setProperty("border-top-color", hrColor, "important");
-            hr.style.setProperty("border-bottom-color", hrColor, "important");
-            hr.style.setProperty("background", hrColor, "important");
-            hr.style.setProperty("background-color", hrColor, "important");
-            hr.style.setProperty("color", hrColor, "important");
+            hr.style.setProperty("border-color", c, "important");
+            hr.style.setProperty("background", c, "important");
+          });
+          // Fix any element with inline border styles (React often sets these)
+          doc.querySelectorAll("[style]").forEach(el => {
+            const s = el.getAttribute("style") || "";
+            if (s.includes("border")) {
+              el.style.setProperty("border-color", c, "important");
+            }
           });
         }
 
