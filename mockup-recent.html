@@ -164,7 +164,7 @@
             <h2>Recent</h2>
             <ul class="recent-list">
 
-              <li class="recent-item">
+              <li class="recent-item" data-date="2026-03">
                 <div class="recent-row">
                   <span class="recent-date">Mar 2026</span>
                   <span class="recent-entry">
@@ -178,7 +178,25 @@
                   </span>
                 </div>
                 <div class="recent-desc">
-                  Some context, a few brief points on why major choice matters, and a <a href="https://liamsbaldwin.github.io/collegemajors/">website</a> I made which compares majors by earning for ~all US institutions.
+                  Some context, a few brief points on why major choice matters, and a <a href="https://liamsbaldwin.github.io/collegemajors/">website</a> I made which compares majors by earnings for &asymp;all US institutions.
+                </div>
+              </li>
+
+              <li class="recent-item" data-date="2025-05">
+                <div class="recent-row">
+                  <span class="recent-date">May 2025</span>
+                  <span class="recent-entry">
+                    <a href="#">Placeholder Entry</a>
+                    <span class="recent-entry-group">
+                      <span class="recent-type">blog</span>
+                      <button class="recent-expand" type="button" aria-label="Show description">
+                        <span class="recent-expand-icon">&#9660;</span>
+                      </button>
+                    </span>
+                  </span>
+                </div>
+                <div class="recent-desc">
+                  Placeholder description for testing date-based suppression.
                 </div>
               </li>
 
@@ -252,6 +270,19 @@
         btn.addEventListener("click", () => {
           root.classList.toggle("dark");
           localStorage.setItem(KEY, root.classList.contains("dark") ? "dark" : "light");
+        });
+      })();
+
+      // Hide entries older than 4 months
+      (function () {
+        const now = new Date();
+        const cutoff = new Date(now.getFullYear(), now.getMonth() - 4, 1);
+        document.querySelectorAll(".recent-item[data-date]").forEach((item) => {
+          const [y, m] = item.dataset.date.split("-").map(Number);
+          const entryDate = new Date(y, m - 1, 1);
+          if (entryDate < cutoff) {
+            item.style.display = "none";
+          }
         });
       })();
 
