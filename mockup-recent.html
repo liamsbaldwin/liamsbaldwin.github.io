@@ -121,22 +121,21 @@
         color: rgba(255,255,255,0.50);
       }
       .recent-item.open .recent-desc {
-        max-height: 600px;
+        max-height: 2000px;
         opacity: 1;
         padding-top: 2px;
         padding-bottom: 10px;
       }
       .recent-desc iframe {
         display: block;
-        margin-top: 10px;
+        margin: 10px auto 0;
         width: 100%;
-        height: 420px;
-        border: 1px solid rgba(0,0,0,0.1);
-        border-radius: 6px;
-        background: #fff;
+        border: none;
+        overflow: hidden;
+        background: transparent;
       }
-      html.dark .recent-desc iframe {
-        border-color: rgba(255,255,255,0.1);
+      .recent-desc .embed-wrap {
+        text-align: center;
       }
     </style>
   </head>
@@ -191,7 +190,9 @@
                 </div>
                 <div class="recent-desc">
                   Some context, a few brief points on why major choice matters, and a <a href="https://liamsbaldwin.github.io/collegemajors/">website</a> I made which compares majors by earnings for ~all US institutions.
-                  <iframe src="https://liamsbaldwin.github.io/collegemajors/" loading="lazy" title="College Majors Explorer"></iframe>
+                  <div class="embed-wrap">
+                    <iframe id="majors-embed" src="about:blank" data-src="https://liamsbaldwin.github.io/collegemajors/" scrolling="no" title="College Majors Explorer"></iframe>
+                  </div>
                 </div>
               </li>
 
@@ -313,7 +314,40 @@
             btn.setAttribute("aria-label",
               item.classList.contains("open") ? "Hide description" : "Show description"
             );
+
+            // Lazy-load iframe on first expand
+            const iframe = item.querySelector("iframe[data-src]");
+            if (iframe && item.classList.contains("open") && iframe.src === "about:blank") {
+              iframe.src = iframe.dataset.src;
+            }
           });
+        });
+      })();
+
+      // Auto-resize iframe to match its content height (same origin)
+      (function () {
+        const iframe = document.getElementById("majors-embed");
+        if (!iframe) return;
+
+        function resize() {
+          try {
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!doc || !doc.body) return;
+            // Make embedded page background transparent
+            doc.documentElement.style.background = "transparent";
+            doc.body.style.background = "transparent";
+            iframe.style.height = doc.documentElement.scrollHeight + "px";
+          } catch (e) { /* cross-origin fallback: fixed height */ iframe.style.height = "500px"; }
+        }
+
+        iframe.addEventListener("load", () => {
+          resize();
+          // Watch for content changes (e.g. search results appearing)
+          try {
+            const observer = new MutationObserver(resize);
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            observer.observe(doc.body, { childList: true, subtree: true, attributes: true });
+          } catch (e) {}
         });
       })();
     </script>
