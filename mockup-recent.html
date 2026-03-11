@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recent Section Mockups</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* ── Mockup scaffolding ── */
+      .mockup-label {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(0,0,0,0.35);
+        margin: 64px 0 20px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed rgba(0,0,0,0.15);
+      }
+      html.dark .mockup-label {
+        color: rgba(255,255,255,0.3);
+        border-bottom-color: rgba(255,255,255,0.12);
+      }
+      .mockup-divider {
+        height: 1px;
+        background: rgba(0,0,0,0.06);
+        margin: 60px 0 0;
+      }
+      html.dark .mockup-divider {
+        background: rgba(255,255,255,0.06);
+      }
+
+      /* ── Option A: simple dated list ── */
+      .recent-a {
+        margin-top: 36px;
+      }
+      .recent-a h2 {
+        margin-top: 0;
+      }
+      .recent-a-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .recent-a-list li {
+        display: flex;
+        align-items: baseline;
+        gap: 20px;
+        padding: 7px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+      }
+      html.dark .recent-a-list li {
+        border-bottom-color: rgba(255,255,255,0.05);
+      }
+      .recent-a-list li:last-child {
+        border-bottom: none;
+      }
+      .recent-a-date {
+        font-size: 14px;
+        color: rgba(0,0,0,0.4);
+        white-space: nowrap;
+        min-width: 72px;
+      }
+      html.dark .recent-a-date {
+        color: rgba(255,255,255,0.4);
+      }
+      .recent-a-title {
+        font-size: 19px;
+      }
+      .recent-a-type {
+        font-size: 13px;
+        color: rgba(0,0,0,0.35);
+        margin-left: 6px;
+      }
+      html.dark .recent-a-type {
+        color: rgba(255,255,255,0.35);
+      }
+
+      /* ── Option B: left-border cards ── */
+      .recent-b {
+        margin-top: 36px;
+      }
+      .recent-b h2 {
+        margin-top: 0;
+      }
+      .recent-b-item {
+        padding: 14px 0 14px 18px;
+        border-left: 3px solid rgba(26,115,232,0.45);
+        margin-bottom: 18px;
+      }
+      .recent-b-item:last-child {
+        margin-bottom: 0;
+      }
+      .recent-b-title {
+        font-size: 19px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+      .recent-b-meta {
+        font-size: 13.5px;
+        color: rgba(0,0,0,0.45);
+        margin-bottom: 5px;
+      }
+      html.dark .recent-b-meta {
+        color: rgba(255,255,255,0.45);
+      }
+      .recent-b-desc {
+        font-size: 17px;
+        color: rgba(0,0,0,0.7);
+        margin: 0;
+      }
+      html.dark .recent-b-desc {
+        color: rgba(255,255,255,0.65);
+      }
+
+      /* ── Option C: chip row ── */
+      .recent-c {
+        margin-top: 36px;
+      }
+      .recent-c h2 {
+        margin-top: 0;
+      }
+      .recent-c-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .recent-c-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 14px;
+        border: 1.5px solid rgba(0,0,0,0.12);
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 16px;
+        color: inherit;
+        transition: border-color 160ms, background 160ms, transform 160ms;
+        background: rgba(0,0,0,0.015);
+      }
+      html.dark .recent-c-chip {
+        border-color: rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.03);
+      }
+      .recent-c-chip:hover {
+        border-color: rgba(26,115,232,0.5);
+        background: rgba(26,115,232,0.04);
+        transform: translateY(-1px);
+        text-decoration: none;
+      }
+      .recent-c-icon {
+        font-size: 14px;
+        opacity: 0.5;
+      }
+      .recent-c-chip-title {
+        color: #1a73e8;
+      }
+      .recent-c-chip-type {
+        font-size: 12px;
+        color: rgba(0,0,0,0.35);
+        padding: 2px 6px;
+        background: rgba(0,0,0,0.05);
+        border-radius: 4px;
+      }
+      html.dark .recent-c-chip-type {
+        color: rgba(255,255,255,0.35);
+        background: rgba(255,255,255,0.07);
+      }
+
+      /* ── Option D: timeline ── */
+      .recent-d {
+        margin-top: 36px;
+      }
+      .recent-d h2 {
+        margin-top: 0;
+      }
+      .recent-d-group {
+        margin-bottom: 24px;
+      }
+      .recent-d-month {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(0,0,0,0.35);
+        margin-bottom: 10px;
+      }
+      html.dark .recent-d-month {
+        color: rgba(255,255,255,0.3);
+      }
+      .recent-d-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 5px 0;
+      }
+      .recent-d-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.2);
+        margin-top: 8px;
+        flex-shrink: 0;
+      }
+      html.dark .recent-d-dot {
+        background: rgba(255,255,255,0.25);
+      }
+      .recent-d-text {}
+      .recent-d-title {
+        font-size: 19px;
+        display: block;
+        margin-bottom: 2px;
+      }
+      .recent-d-type {
+        font-size: 13px;
+        color: rgba(0,0,0,0.38);
+      }
+      html.dark .recent-d-type {
+        color: rgba(255,255,255,0.38);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+
+      <!-- ── Shared homepage bio (context) ── -->
+      <div class="layout">
+        <div class="photo-col">
+          <img class="photo" src="headshot.jpg" alt="Headshot of Liam Baldwin" />
+          <div class="photo-caption">Yes, I still need a real headshot.</div>
+        </div>
+
+        <div class="content">
+          <h1>Liam Baldwin</h1>
+
+          <p>
+            I receieved my BS in economics (minor in math) from
+            <a href="#">Georgia College</a>.
+            Previously, I was an intern at the Federal Reserve Bank of Boston and completed a summer
+            course/fellowship with Opportunity Insights at Harvard.
+          </p>
+
+          <p>
+            In my free time I like to <a href="/reading.html">read</a>, write, and lift weights.
+            I am also working on a YouTube channel on economics &amp; statistics, with the generous support
+            of <a href="#">Emergent Ventures</a>.
+          </p>
+
+          <p>
+            If you'd like to speak with me about any of these projects, or are interested in collaborating
+            on research, do not hesitate to
+            <a href="#">email</a> me.
+            I am always excited to meet those who share my interests.
+          </p>
+
+          <!-- ════════════════════════════════════════ -->
+          <!-- OPTION A                                 -->
+          <!-- ════════════════════════════════════════ -->
+          <div class="mockup-label">Option A — Simple dated list</div>
+
+          <div class="recent-a">
+            <h2>Recent</h2>
+            <ul class="recent-a-list">
+              <li>
+                <span class="recent-a-date">Mar 2026</span>
+                <span>
+                  <a href="#">Why Regression Discontinuity is Everywhere</a>
+                  <span class="recent-a-type">video</span>
+                </span>
+              </li>
+              <li>
+                <span class="recent-a-date">Feb 2026</span>
+                <span>
+                  <a href="#">Notes on Opportunity Zone Policy</a>
+                  <span class="recent-a-type">blog</span>
+                </span>
+              </li>
+              <li>
+                <span class="recent-a-date">Jan 2026</span>
+                <span>
+                  <a href="#">Works in Progress Issue 21</a>
+                  <span class="recent-a-type">review</span>
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- ════════════════════════════════════════ -->
+          <!-- OPTION B                                 -->
+          <!-- ════════════════════════════════════════ -->
+          <div class="mockup-label">Option B — Left-border cards</div>
+
+          <div class="recent-b">
+            <h2>Recent</h2>
+            <div class="recent-b-item">
+              <div class="recent-b-title">
+                <a href="#">Why Regression Discontinuity is Everywhere</a>
+              </div>
+              <div class="recent-b-meta">video &middot; Mar 2026</div>
+              <p class="recent-b-desc">An explainer on one of the most widely-used quasi-experimental methods in applied econometrics.</p>
+            </div>
+            <div class="recent-b-item">
+              <div class="recent-b-title">
+                <a href="#">Notes on Opportunity Zone Policy</a>
+              </div>
+              <div class="recent-b-meta">blog &middot; Feb 2026</div>
+              <p class="recent-b-desc">A short exploration of place-based tax incentives and what the evidence says so far.</p>
+            </div>
+            <div class="recent-b-item">
+              <div class="recent-b-title">
+                <a href="#">Works in Progress Issue 21</a>
+              </div>
+              <div class="recent-b-meta">review &middot; Jan 2026</div>
+            </div>
+          </div>
+
+          <!-- ════════════════════════════════════════ -->
+          <!-- OPTION C                                 -->
+          <!-- ════════════════════════════════════════ -->
+          <div class="mockup-label">Option C — Chip row</div>
+
+          <div class="recent-c">
+            <h2>Recent</h2>
+            <div class="recent-c-row">
+              <a href="#" class="recent-c-chip">
+                <span class="recent-c-icon">▶</span>
+                <span class="recent-c-chip-title">RD is Everywhere</span>
+                <span class="recent-c-chip-type">video</span>
+              </a>
+              <a href="#" class="recent-c-chip">
+                <span class="recent-c-icon">✎</span>
+                <span class="recent-c-chip-title">Opportunity Zones</span>
+                <span class="recent-c-chip-type">blog</span>
+              </a>
+              <a href="#" class="recent-c-chip">
+                <span class="recent-c-icon">★</span>
+                <span class="recent-c-chip-title">WIP Issue 21</span>
+                <span class="recent-c-chip-type">review</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ════════════════════════════════════════ -->
+          <!-- OPTION D                                 -->
+          <!-- ════════════════════════════════════════ -->
+          <div class="mockup-label">Option D — Date-grouped timeline</div>
+
+          <div class="recent-d">
+            <h2>Recent</h2>
+            <div class="recent-d-group">
+              <div class="recent-d-month">March 2026</div>
+              <div class="recent-d-item">
+                <div class="recent-d-dot"></div>
+                <div class="recent-d-text">
+                  <a href="#" class="recent-d-title">Why Regression Discontinuity is Everywhere</a>
+                  <span class="recent-d-type">video</span>
+                </div>
+              </div>
+            </div>
+            <div class="recent-d-group">
+              <div class="recent-d-month">February 2026</div>
+              <div class="recent-d-item">
+                <div class="recent-d-dot"></div>
+                <div class="recent-d-text">
+                  <a href="#" class="recent-d-title">Notes on Opportunity Zone Policy</a>
+                  <span class="recent-d-type">blog &mdash; A short exploration of place-based policy design.</span>
+                </div>
+              </div>
+            </div>
+            <div class="recent-d-group">
+              <div class="recent-d-month">January 2026</div>
+              <div class="recent-d-item">
+                <div class="recent-d-dot"></div>
+                <div class="recent-d-text">
+                  <a href="#" class="recent-d-title">Works in Progress Issue 21</a>
+                  <span class="recent-d-type">review</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Dark mode toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" type="button">
+      <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M21 14.5A8.5 8.5 0 0 1 9.5 3a6.5 6.5 0 1 0 11.5 11.5Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+
+    <script>
+      (function () {
+        const KEY = "theme";
+        const root = document.documentElement;
+        const btn = document.getElementById("themeToggle");
+        const saved = localStorage.getItem(KEY);
+        if (saved === "dark") root.classList.add("dark");
+        btn.addEventListener("click", () => {
+          root.classList.toggle("dark");
+          localStorage.setItem(KEY, root.classList.contains("dark") ? "dark" : "light");
+        });
+      })();
+    </script>
+  </body>
+</html>
