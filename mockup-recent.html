@@ -370,12 +370,13 @@
               hr, [class*="divider"], [class*="separator"], [class*="Divider"] {
                 border-color: ${hrColor} !important;
                 border-top-color: ${hrColor} !important;
+                border-bottom-color: ${hrColor} !important;
+                border-left-color: ${hrColor} !important;
+                border-right-color: ${hrColor} !important;
                 background: ${hrColor} !important;
                 background-color: ${hrColor} !important;
+                color: ${hrColor} !important;
                 opacity: 1 !important;
-                height: 1px !important;
-                border-width: 0 !important;
-                border-top-width: 1px !important;
               }
 
               /* Title & subtitle */
@@ -446,12 +447,13 @@
                 color: ${fg} !important;
               }
 
-              /* Stat cards — remove background bars */
+              /* Stat cards — keep rounded containers with subtle bg */
               [class*="card"], [class*="stat"], [class*="metric"],
               [class*="Card"], [class*="Stat"] {
-                background: transparent !important;
-                background-color: transparent !important;
-                border: none !important;
+                background: ${cardBg} !important;
+                background-color: ${cardBg} !important;
+                border: 1px solid ${cardBorder} !important;
+                border-radius: 8px !important;
                 color: ${fg} !important;
               }
               [class*="card"] h2, [class*="card"] h3, [class*="card"] [class*="value"],
@@ -546,13 +548,27 @@
             const observer = new MutationObserver(() => {
               injectStyles();
               fixTooltips(doc);
+              fixDividers(doc);
             });
             observer.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class"] });
 
-            // Also poll for tooltips since Recharts can set inline styles after render
-            setInterval(() => fixTooltips(doc), 200);
+            // Also poll since Recharts/React can set inline styles after render
+            setInterval(() => { fixTooltips(doc); fixDividers(doc); }, 200);
           } catch (e) {}
         });
+
+        function fixDividers(doc) {
+          const dark = document.documentElement.classList.contains("dark");
+          const hrColor = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+          doc.querySelectorAll("hr").forEach(hr => {
+            hr.style.setProperty("border-color", hrColor, "important");
+            hr.style.setProperty("border-top-color", hrColor, "important");
+            hr.style.setProperty("border-bottom-color", hrColor, "important");
+            hr.style.setProperty("background", hrColor, "important");
+            hr.style.setProperty("background-color", hrColor, "important");
+            hr.style.setProperty("color", hrColor, "important");
+          });
+        }
 
         function fixTooltips(doc) {
           const dark = document.documentElement.classList.contains("dark");
