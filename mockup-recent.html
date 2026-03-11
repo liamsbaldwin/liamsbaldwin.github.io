@@ -18,18 +18,22 @@
         padding: 0;
         margin: 0;
       }
-      .recent-list li {
+      .recent-item {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+      }
+      html.dark .recent-item {
+        border-bottom-color: rgba(255,255,255,0.05);
+      }
+      .recent-item:last-child {
+        border-bottom: none;
+      }
+
+      /* Top row: date | title | type | chevron */
+      .recent-row {
         display: flex;
         align-items: baseline;
         gap: 20px;
         padding: 7px 0;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-      }
-      html.dark .recent-list li {
-        border-bottom-color: rgba(255,255,255,0.05);
-      }
-      .recent-list li:last-child {
-        border-bottom: none;
       }
       .recent-date {
         font-size: 14px;
@@ -40,104 +44,86 @@
       html.dark .recent-date {
         color: rgba(255,255,255,0.4);
       }
-      .recent-title {
-        font-size: 19px;
-      }
       .recent-entry {
         display: flex;
         align-items: baseline;
         gap: 6px;
-        flex-wrap: wrap;
+        flex: 1;
+        min-width: 0;
       }
 
-      /* ── Type tag with dropdown ── */
-      .recent-type-wrap {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-      }
-      .recent-type-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
+      /* Type label (plain, no interaction) */
+      .recent-type {
         padding: 1px 7px;
-        border: none;
         border-radius: 4px;
         background: rgba(0,0,0,0.05);
-        font-family: inherit;
         font-size: 12.5px;
         color: rgba(0,0,0,0.38);
-        cursor: pointer;
-        transition: background 140ms, color 140ms;
+        white-space: nowrap;
         line-height: 1.5;
       }
-      html.dark .recent-type-btn {
+      html.dark .recent-type {
         background: rgba(255,255,255,0.07);
         color: rgba(255,255,255,0.38);
       }
-      .recent-type-btn:hover {
-        background: rgba(0,0,0,0.09);
-        color: rgba(0,0,0,0.55);
+
+      /* Expand chevron button */
+      .recent-expand {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+        color: rgba(0,0,0,0.22);
+        transition: color 140ms, background 140ms;
+        align-self: center;
       }
-      html.dark .recent-type-btn:hover {
-        background: rgba(255,255,255,0.12);
-        color: rgba(255,255,255,0.55);
+      .recent-expand:hover {
+        color: rgba(0,0,0,0.45);
+        background: rgba(0,0,0,0.04);
       }
-      .recent-type-chevron {
-        display: inline-block;
-        font-size: 9px;
-        transition: transform 180ms ease;
-        margin-top: 1px;
+      html.dark .recent-expand {
+        color: rgba(255,255,255,0.22);
       }
-      .recent-type-wrap.open .recent-type-chevron {
+      html.dark .recent-expand:hover {
+        color: rgba(255,255,255,0.45);
+        background: rgba(255,255,255,0.06);
+      }
+      .recent-expand svg {
+        display: block;
+        width: 12px;
+        height: 12px;
+        transition: transform 200ms ease;
+      }
+      .recent-item.open .recent-expand svg {
         transform: rotate(180deg);
       }
 
-      /* ── Dropdown menu ── */
-      .recent-type-menu {
-        position: absolute;
-        top: calc(100% + 4px);
-        left: 0;
-        min-width: 120px;
-        background: #fff;
-        border: 1px solid rgba(0,0,0,0.1);
-        border-radius: 6px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-        padding: 4px 0;
+      /* Expandable description */
+      .recent-desc {
+        overflow: hidden;
+        max-height: 0;
         opacity: 0;
-        visibility: hidden;
-        transform: translateY(-4px);
-        transition: opacity 140ms, transform 140ms, visibility 0s 140ms;
-        z-index: 10;
+        transition: max-height 250ms ease, opacity 200ms ease, padding 200ms ease;
+        padding: 0 0 0 92px; /* align with title (72px date + 20px gap) */
+        font-size: 15px;
+        color: rgba(0,0,0,0.55);
+        line-height: 1.5;
       }
-      .recent-type-wrap.open .recent-type-menu {
+      html.dark .recent-desc {
+        color: rgba(255,255,255,0.50);
+      }
+      .recent-item.open .recent-desc {
+        max-height: 120px;
         opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-        transition: opacity 140ms, transform 140ms, visibility 0s;
-      }
-      html.dark .recent-type-menu {
-        background: #2a2a2a;
-        border-color: rgba(255,255,255,0.12);
-        box-shadow: 0 4px 14px rgba(0,0,0,0.35);
-      }
-      .recent-type-menu a {
-        display: block;
-        padding: 5px 12px;
-        font-size: 13px;
-        color: rgba(0,0,0,0.7);
-        text-decoration: none;
-        transition: background 100ms;
-      }
-      html.dark .recent-type-menu a {
-        color: rgba(255,255,255,0.7);
-      }
-      .recent-type-menu a:hover {
-        background: rgba(0,0,0,0.04);
-        text-decoration: none;
-      }
-      html.dark .recent-type-menu a:hover {
-        background: rgba(255,255,255,0.06);
+        padding-top: 2px;
+        padding-bottom: 10px;
       }
     </style>
   </head>
@@ -176,48 +162,61 @@
           <div class="recent">
             <h2>Recent</h2>
             <ul class="recent-list">
-              <li>
-                <span class="recent-date">Mar 2026</span>
-                <span class="recent-entry">
-                  <a href="#">Why Regression Discontinuity is Everywhere</a>
-                  <span class="recent-type-wrap">
-                    <button class="recent-type-btn" type="button">
-                      video <span class="recent-type-chevron">&#9662;</span>
-                    </button>
-                    <span class="recent-type-menu">
-                      <a href="#">All videos</a>
-                    </span>
+
+              <li class="recent-item">
+                <div class="recent-row">
+                  <span class="recent-date">Mar 2026</span>
+                  <span class="recent-entry">
+                    <a href="#">Why Regression Discontinuity is Everywhere</a>
+                    <span class="recent-type">video</span>
                   </span>
-                </span>
+                  <button class="recent-expand" type="button" aria-label="Show description">
+                    <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2.5 4.5 6 8l3.5-3.5"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="recent-desc">
+                  A visual explainer on why regression discontinuity designs show up in so many empirical economics papers, and what makes them convincing.
+                </div>
               </li>
-              <li>
-                <span class="recent-date">Feb 2026</span>
-                <span class="recent-entry">
-                  <a href="#">Notes on Opportunity Zone Policy</a>
-                  <span class="recent-type-wrap">
-                    <button class="recent-type-btn" type="button">
-                      blog <span class="recent-type-chevron">&#9662;</span>
-                    </button>
-                    <span class="recent-type-menu">
-                      <a href="#">All posts</a>
-                    </span>
+
+              <li class="recent-item">
+                <div class="recent-row">
+                  <span class="recent-date">Feb 2026</span>
+                  <span class="recent-entry">
+                    <a href="#">Notes on Opportunity Zone Policy</a>
+                    <span class="recent-type">blog</span>
                   </span>
-                </span>
+                  <button class="recent-expand" type="button" aria-label="Show description">
+                    <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2.5 4.5 6 8l3.5-3.5"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="recent-desc">
+                  Summarizing what we know about Opportunity Zones so far—whether capital actually flows to distressed areas and the early evidence on local outcomes.
+                </div>
               </li>
-              <li>
-                <span class="recent-date">Jan 2026</span>
-                <span class="recent-entry">
-                  <a href="#">Works in Progress Issue 21</a>
-                  <span class="recent-type-wrap">
-                    <button class="recent-type-btn" type="button">
-                      review <span class="recent-type-chevron">&#9662;</span>
-                    </button>
-                    <span class="recent-type-menu">
-                      <a href="#">All reviews</a>
-                    </span>
+
+              <li class="recent-item">
+                <div class="recent-row">
+                  <span class="recent-date">Jan 2026</span>
+                  <span class="recent-entry">
+                    <a href="#">Works in Progress Issue 21</a>
+                    <span class="recent-type">review</span>
                   </span>
-                </span>
+                  <button class="recent-expand" type="button" aria-label="Show description">
+                    <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2.5 4.5 6 8l3.5-3.5"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="recent-desc">
+                  Quick thoughts on the latest issue of Works in Progress, covering pieces on housing, industrial policy, and the history of growth accounting.
+                </div>
               </li>
+
             </ul>
           </div>
 
@@ -253,25 +252,16 @@
         });
       })();
 
-      // Dropdown toggle for type tags
+      // Expand/collapse descriptions
       (function () {
-        document.querySelectorAll(".recent-type-btn").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const wrap = btn.closest(".recent-type-wrap");
-            const wasOpen = wrap.classList.contains("open");
-            // close all first
-            document.querySelectorAll(".recent-type-wrap.open").forEach((w) =>
-              w.classList.remove("open")
+        document.querySelectorAll(".recent-expand").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const item = btn.closest(".recent-item");
+            item.classList.toggle("open");
+            btn.setAttribute("aria-label",
+              item.classList.contains("open") ? "Hide description" : "Show description"
             );
-            if (!wasOpen) wrap.classList.add("open");
           });
-        });
-        // close on outside click
-        document.addEventListener("click", () => {
-          document.querySelectorAll(".recent-type-wrap.open").forEach((w) =>
-            w.classList.remove("open")
-          );
         });
       })();
     </script>
