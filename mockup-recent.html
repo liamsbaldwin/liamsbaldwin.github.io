@@ -361,21 +361,37 @@
             const btnActiveBg = dark ? "rgba(80,180,255,0.2)" : "rgba(0,120,255,0.1)";
             const btnActiveColor = dark ? "#5cc8ff" : "#0070e0";
             const accent = dark ? "#5cc8ff" : "#0070e0";
-            const hrColor = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)";
+            const hrColor = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
 
             style.textContent = `
               /* Global */
               html, body { background: transparent !important; color: ${fg} !important; }
               body { transform: scale(0.85); transform-origin: top center; }
-              hr, [class*="divider"], [class*="separator"] {
+              hr, [class*="divider"], [class*="separator"], [class*="Divider"] {
                 border-color: ${hrColor} !important;
+                border-top-color: ${hrColor} !important;
                 background: ${hrColor} !important;
+                background-color: ${hrColor} !important;
+                opacity: 1 !important;
+                height: 1px !important;
+                border-width: 0 !important;
+                border-top-width: 1px !important;
               }
 
               /* Title & subtitle */
               h1 { color: ${fg} !important; font-size: 1.6em !important; }
               h1 + p, h1 ~ p:first-of-type, [class*="subtitle"], [class*="tagline"] {
                 color: ${fgMuted} !important; font-size: 0.85em !important;
+              }
+
+              /* Remove any dark header/hero background bars */
+              header, [class*="header"], [class*="Header"],
+              [class*="hero"], [class*="Hero"],
+              [class*="banner"], [class*="Banner"],
+              [class*="top-bar"], [class*="topbar"],
+              nav, [class*="nav"], [class*="Nav"] {
+                background: transparent !important;
+                background-color: transparent !important;
               }
 
               /* Search bar */
@@ -418,11 +434,23 @@
               [class*="dropdown"] [class*="subtitle"] {
                 color: ${fgMuted} !important;
               }
+              /* School names in search dropdown — full contrast */
+              [class*="dropdown"] li, [class*="Dropdown"] li,
+              [class*="dropdown"] [class*="name"], [class*="Dropdown"] [class*="name"],
+              [class*="dropdown"] [class*="school"], [class*="Dropdown"] [class*="school"],
+              [class*="dropdown"] [class*="title"], [class*="Dropdown"] [class*="title"],
+              [class*="dropdown"] span, [class*="Dropdown"] span,
+              [role="option"], [role="option"] span,
+              [class*="suggestion"] span, [class*="Suggestion"] span,
+              [class*="result"] span, [class*="Result"] span {
+                color: ${fg} !important;
+              }
 
-              /* Stat cards */
+              /* Stat cards — remove background bars */
               [class*="card"], [class*="stat"], [class*="metric"],
               [class*="Card"], [class*="Stat"] {
-                background: ${cardBg} !important;
+                background: transparent !important;
+                background-color: transparent !important;
                 border: none !important;
                 color: ${fg} !important;
               }
@@ -438,22 +466,20 @@
               /* Filter buttons (degree level, earnings period) */
               button, [class*="filter"], [class*="pill"], [class*="toggle"],
               [class*="btn"]:not([class*="search"]) {
-                background: transparent !important;
+                background: ${btnBg} !important;
                 border: none !important;
                 color: ${fg} !important;
                 border-radius: 6px !important;
                 font-size: 0.85em !important;
               }
               button:hover, [class*="filter"]:hover, [class*="pill"]:hover {
-                background: ${dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"} !important;
+                background: ${dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"} !important;
               }
               button[class*="active"], button[aria-pressed="true"],
               [class*="active"], [class*="selected"] {
-                background: transparent !important;
+                background: ${btnActiveBg} !important;
                 border: none !important;
                 color: ${btnActiveColor} !important;
-                text-decoration: underline !important;
-                text-underline-offset: 3px !important;
               }
 
               /* Chart area — major labels should be full contrast */
@@ -495,7 +521,7 @@
 
               /* University name heading */
               h2, h3 { color: ${fg} !important; }
-              [class*="school"], [class*="university"] { color: ${accent} !important; }
+              [class*="school"], [class*="university"] { color: ${fg} !important; }
 
               /* General muted text */
               p, label, small, [class*="desc"] { color: ${fgMuted} !important; }
@@ -519,44 +545,42 @@
             const doc = iframe.contentDocument || iframe.contentWindow.document;
             const observer = new MutationObserver(() => {
               injectStyles();
+              fixTooltips(doc);
             });
-            observer.observe(doc.body, { childList: true, subtree: true, attributes: true });
+            observer.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class"] });
 
-            // Dedicated tooltip observer — catches tooltip DOM insertions
-            const tooltipObs = new MutationObserver((mutations) => {
-              const dark = document.documentElement.classList.contains("dark");
-              const fg = dark ? "#e0e0e0" : "#1a1a1a";
-              const bg = dark ? "#1e1e1e" : "#ffffff";
-              const border = dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)";
-              for (const m of mutations) {
-                for (const node of m.addedNodes) {
-                  if (node.nodeType !== 1) continue;
-                  const isTooltip = (node.className && (
-                    String(node.className).includes("tooltip") ||
-                    String(node.className).includes("Tooltip")
-                  )) || node.getAttribute("role") === "tooltip";
-                  const tooltips = isTooltip ? [node] : [];
-                  if (node.querySelectorAll) {
-                    node.querySelectorAll('[class*="tooltip"], [class*="Tooltip"], [role="tooltip"], .recharts-tooltip-wrapper').forEach(t => tooltips.push(t));
-                  }
-                  tooltips.forEach(t => {
-                    const inner = t.querySelector("div") || t;
-                    inner.style.setProperty("background", bg, "important");
-                    inner.style.setProperty("background-color", bg, "important");
-                    inner.style.setProperty("color", fg, "important");
-                    inner.style.setProperty("border", "1px solid " + border, "important");
-                    inner.style.setProperty("border-radius", "6px", "important");
-                    inner.querySelectorAll("*").forEach(el => {
-                      el.style.setProperty("color", fg, "important");
-                      el.style.setProperty("background", "transparent", "important");
-                    });
-                  });
-                }
-              }
-            });
-            tooltipObs.observe(doc.body, { childList: true, subtree: true });
+            // Also poll for tooltips since Recharts can set inline styles after render
+            setInterval(() => fixTooltips(doc), 200);
           } catch (e) {}
         });
+
+        function fixTooltips(doc) {
+          const dark = document.documentElement.classList.contains("dark");
+          const fg = dark ? "#e0e0e0" : "#1a1a1a";
+          const bg = dark ? "#1e1e1e" : "#ffffff";
+          const borderColor = dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)";
+          const shadow = "0 4px 16px rgba(0,0,0," + (dark ? "0.4" : "0.1") + ")";
+          // Recharts tooltip wrapper and all common tooltip patterns
+          const els = doc.querySelectorAll(
+            '.recharts-tooltip-wrapper, .recharts-default-tooltip, [class*="tooltip"], [class*="Tooltip"], [role="tooltip"]'
+          );
+          els.forEach(el => {
+            // The wrapper itself and its first child div (which has the white bg)
+            [el, ...el.querySelectorAll("div")].forEach((d, i) => {
+              if (i <= 1 || (d.className && String(d.className).match(/tooltip/i))) {
+                d.style.setProperty("background", bg, "important");
+                d.style.setProperty("background-color", bg, "important");
+                d.style.setProperty("border-color", borderColor, "important");
+                d.style.setProperty("box-shadow", shadow, "important");
+              }
+            });
+            // All text inside
+            el.querySelectorAll("*").forEach(child => {
+              child.style.setProperty("color", fg, "important");
+            });
+            el.style.setProperty("color", fg, "important");
+          });
+        }
 
         // Re-inject when homepage theme toggles
         const themeBtn = document.querySelector(".theme-toggle");
