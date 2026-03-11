@@ -19,10 +19,10 @@
         margin: 0;
       }
       .recent-item {
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        border-bottom: 1px solid rgba(0,0,0,0.15);
       }
       html.dark .recent-item {
-        border-bottom-color: rgba(255,255,255,0.05);
+        border-bottom-color: rgba(255,255,255,0.1);
       }
       .recent-item:last-child {
         border-bottom: none;
@@ -138,6 +138,11 @@
       }
       .recent-desc .embed-wrap {
         text-align: center;
+      }
+      @media (max-width: 768px) {
+        .recent-desc .embed-wrap {
+          display: none;
+        }
       }
     </style>
   </head>
@@ -433,20 +438,22 @@
               /* Filter buttons (degree level, earnings period) */
               button, [class*="filter"], [class*="pill"], [class*="toggle"],
               [class*="btn"]:not([class*="search"]) {
-                background: ${btnBg} !important;
+                background: transparent !important;
                 border: none !important;
                 color: ${fg} !important;
                 border-radius: 6px !important;
                 font-size: 0.85em !important;
               }
               button:hover, [class*="filter"]:hover, [class*="pill"]:hover {
-                background: ${dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"} !important;
+                background: ${dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"} !important;
               }
               button[class*="active"], button[aria-pressed="true"],
               [class*="active"], [class*="selected"] {
-                background: ${btnActiveBg} !important;
+                background: transparent !important;
                 border: none !important;
                 color: ${btnActiveColor} !important;
+                text-decoration: underline !important;
+                text-underline-offset: 3px !important;
               }
 
               /* Chart area — major labels should be full contrast */
@@ -458,26 +465,30 @@
                 stroke: ${hrColor} !important;
               }
 
-              /* Tooltips / popovers on bar hover */
+              /* Tooltips / popovers on bar hover — broad selectors */
               [class*="tooltip"], [class*="Tooltip"],
               [class*="popover"], [class*="Popover"],
               [role="tooltip"], .recharts-tooltip-wrapper,
               .recharts-default-tooltip,
+              .recharts-tooltip-wrapper > div,
               div[class*="tooltip"], div[class*="Tooltip"] {
-                background: ${dark ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.97)"} !important;
+                background: ${dark ? "#1e1e1e" : "#ffffff"} !important;
+                background-color: ${dark ? "#1e1e1e" : "#ffffff"} !important;
                 color: ${fg} !important;
-                border: 1px solid ${dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)"} !important;
+                border: 1px solid ${dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)"} !important;
                 border-radius: 6px !important;
-                backdrop-filter: blur(12px) !important;
-                box-shadow: 0 4px 16px rgba(0,0,0,${dark ? "0.4" : "0.08"}) !important;
+                box-shadow: 0 4px 16px rgba(0,0,0,${dark ? "0.4" : "0.1"}) !important;
               }
               [class*="tooltip"] *, [class*="Tooltip"] *,
-              [role="tooltip"] *, .recharts-tooltip-wrapper * {
+              [role="tooltip"] *, .recharts-tooltip-wrapper *,
+              .recharts-default-tooltip * {
                 color: ${fg} !important;
                 fill: ${fg} !important;
+                background: transparent !important;
+                background-color: transparent !important;
               }
-              [class*="tooltip"] [class*="label"], [class*="Tooltip"] [class*="label"],
-              .recharts-tooltip-label {
+              .recharts-tooltip-label, .recharts-tooltip-item,
+              [class*="tooltip"] [class*="label"], [class*="Tooltip"] [class*="label"] {
                 color: ${fg} !important;
                 font-weight: 600 !important;
               }
@@ -494,6 +505,9 @@
             // Resize iframe to content
             const h = doc.documentElement.scrollHeight;
             iframe.style.height = Math.max(h, 1400) + "px";
+
+
+
           } catch (e) {
             iframe.style.height = "1400px";
           }
@@ -503,8 +517,44 @@
           injectStyles();
           try {
             const doc = iframe.contentDocument || iframe.contentWindow.document;
-            const observer = new MutationObserver(() => { injectStyles(); });
+            const observer = new MutationObserver(() => {
+              injectStyles();
+            });
             observer.observe(doc.body, { childList: true, subtree: true, attributes: true });
+
+            // Dedicated tooltip observer — catches tooltip DOM insertions
+            const tooltipObs = new MutationObserver((mutations) => {
+              const dark = document.documentElement.classList.contains("dark");
+              const fg = dark ? "#e0e0e0" : "#1a1a1a";
+              const bg = dark ? "#1e1e1e" : "#ffffff";
+              const border = dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)";
+              for (const m of mutations) {
+                for (const node of m.addedNodes) {
+                  if (node.nodeType !== 1) continue;
+                  const isTooltip = (node.className && (
+                    String(node.className).includes("tooltip") ||
+                    String(node.className).includes("Tooltip")
+                  )) || node.getAttribute("role") === "tooltip";
+                  const tooltips = isTooltip ? [node] : [];
+                  if (node.querySelectorAll) {
+                    node.querySelectorAll('[class*="tooltip"], [class*="Tooltip"], [role="tooltip"], .recharts-tooltip-wrapper').forEach(t => tooltips.push(t));
+                  }
+                  tooltips.forEach(t => {
+                    const inner = t.querySelector("div") || t;
+                    inner.style.setProperty("background", bg, "important");
+                    inner.style.setProperty("background-color", bg, "important");
+                    inner.style.setProperty("color", fg, "important");
+                    inner.style.setProperty("border", "1px solid " + border, "important");
+                    inner.style.setProperty("border-radius", "6px", "important");
+                    inner.querySelectorAll("*").forEach(el => {
+                      el.style.setProperty("color", fg, "important");
+                      el.style.setProperty("background", "transparent", "important");
+                    });
+                  });
+                }
+              }
+            });
+            tooltipObs.observe(doc.body, { childList: true, subtree: true });
           } catch (e) {}
         });
 
