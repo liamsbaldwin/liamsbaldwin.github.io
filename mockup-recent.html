@@ -51,6 +51,11 @@
         flex: 1;
         min-width: 0;
       }
+      .recent-entry-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
 
       /* Type label (plain, no interaction) */
       .recent-type {
@@ -69,39 +74,35 @@
 
       /* Expand chevron button */
       .recent-expand {
-        flex-shrink: 0;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 22px;
-        height: 22px;
+        width: 16px;
+        height: 16px;
         border: none;
-        border-radius: 4px;
+        border-radius: 3px;
         background: transparent;
         cursor: pointer;
         padding: 0;
-        color: rgba(0,0,0,0.22);
-        transition: color 140ms, background 140ms;
-        align-self: center;
+        font-size: 8px;
+        color: rgba(0,0,0,0.25);
+        transition: color 140ms;
+        line-height: 1;
       }
       .recent-expand:hover {
-        color: rgba(0,0,0,0.45);
-        background: rgba(0,0,0,0.04);
+        color: rgba(0,0,0,0.5);
       }
       html.dark .recent-expand {
-        color: rgba(255,255,255,0.22);
+        color: rgba(255,255,255,0.25);
       }
       html.dark .recent-expand:hover {
-        color: rgba(255,255,255,0.45);
-        background: rgba(255,255,255,0.06);
+        color: rgba(255,255,255,0.5);
       }
-      .recent-expand svg {
-        display: block;
-        width: 12px;
-        height: 12px;
+      .recent-expand-icon {
+        display: inline-block;
         transition: transform 200ms ease;
       }
-      .recent-item.open .recent-expand svg {
+      .recent-item.open .recent-expand-icon {
         transform: rotate(180deg);
       }
 
@@ -168,13 +169,13 @@
                   <span class="recent-date">Mar 2026</span>
                   <span class="recent-entry">
                     <a href="#">Why Regression Discontinuity is Everywhere</a>
-                    <span class="recent-type">video</span>
+                    <span class="recent-entry-group">
+                      <span class="recent-type">video</span>
+                      <button class="recent-expand" type="button" aria-label="Show description">
+                        <span class="recent-expand-icon">&#9660;</span>
+                      </button>
+                    </span>
                   </span>
-                  <button class="recent-expand" type="button" aria-label="Show description">
-                    <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M2.5 4.5 6 8l3.5-3.5"/>
-                    </svg>
-                  </button>
                 </div>
                 <div class="recent-desc">
                   A visual explainer on why regression discontinuity designs show up in so many empirical economics papers, and what makes them convincing.
@@ -186,13 +187,13 @@
                   <span class="recent-date">Feb 2026</span>
                   <span class="recent-entry">
                     <a href="#">Notes on Opportunity Zone Policy</a>
-                    <span class="recent-type">blog</span>
+                    <span class="recent-entry-group">
+                      <span class="recent-type">blog</span>
+                      <button class="recent-expand" type="button" aria-label="Show description">
+                        <span class="recent-expand-icon">&#9660;</span>
+                      </button>
+                    </span>
                   </span>
-                  <button class="recent-expand" type="button" aria-label="Show description">
-                    <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M2.5 4.5 6 8l3.5-3.5"/>
-                    </svg>
-                  </button>
                 </div>
                 <div class="recent-desc">
                   Summarizing what we know about Opportunity Zones so far—whether capital actually flows to distressed areas and the early evidence on local outcomes.
@@ -204,13 +205,13 @@
                   <span class="recent-date">Jan 2026</span>
                   <span class="recent-entry">
                     <a href="#">Works in Progress Issue 21</a>
-                    <span class="recent-type">review</span>
+                    <span class="recent-entry-group">
+                      <span class="recent-type">review</span>
+                      <button class="recent-expand" type="button" aria-label="Show description">
+                        <span class="recent-expand-icon">&#9660;</span>
+                      </button>
+                    </span>
                   </span>
-                  <button class="recent-expand" type="button" aria-label="Show description">
-                    <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M2.5 4.5 6 8l3.5-3.5"/>
-                    </svg>
-                  </button>
                 </div>
                 <div class="recent-desc">
                   Quick thoughts on the latest issue of Works in Progress, covering pieces on housing, industrial policy, and the history of growth accounting.
