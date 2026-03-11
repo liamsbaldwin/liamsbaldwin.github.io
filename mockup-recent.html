@@ -361,7 +361,7 @@
             const btnActiveBg = dark ? "rgba(80,180,255,0.2)" : "rgba(0,120,255,0.1)";
             const btnActiveColor = dark ? "#5cc8ff" : "#0070e0";
             const accent = dark ? "#5cc8ff" : "#0070e0";
-            const hrColor = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+            const hrColor = cardBorder; /* match dividers to card borders */
 
             style.textContent = `
               /* Global */
@@ -430,28 +430,35 @@
               [class*="dropdown"] div[class*="item"]:hover {
                 background: ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"} !important;
               }
-              [class*="dropdown"] li small, [role="option"] small,
-              [class*="dropdown"] [class*="location"],
-              [class*="dropdown"] [class*="subtitle"] {
-                color: ${fgMuted} !important;
-              }
-              /* School names in search dropdown — full contrast */
+              /* School names in search dropdown — force full contrast */
               [class*="dropdown"] li, [class*="Dropdown"] li,
               [class*="dropdown"] [class*="name"], [class*="Dropdown"] [class*="name"],
               [class*="dropdown"] [class*="school"], [class*="Dropdown"] [class*="school"],
               [class*="dropdown"] [class*="title"], [class*="Dropdown"] [class*="title"],
               [class*="dropdown"] span, [class*="Dropdown"] span,
-              [role="option"], [role="option"] span,
-              [class*="suggestion"] span, [class*="Suggestion"] span,
-              [class*="result"] span, [class*="Result"] span {
-                color: ${fg} !important;
+              [class*="dropdown"] div, [class*="Dropdown"] div,
+              [class*="dropdown"] p, [class*="Dropdown"] p,
+              [class*="dropdown"] a, [class*="Dropdown"] a,
+              [role="option"], [role="option"] *,
+              [class*="suggestion"] *, [class*="Suggestion"] *,
+              [class*="result"] *, [class*="Result"] *,
+              [role="listbox"] *, [role="listbox"] li {
+                color: ${dark ? "#e0e0e0" : "#000000"} !important;
+              }
+              /* Muted secondary text in dropdown (location, subtitle) */
+              [class*="dropdown"] li small, [role="option"] small,
+              [class*="dropdown"] [class*="location"],
+              [class*="dropdown"] [class*="subtitle"],
+              [class*="dropdown"] [class*="secondary"],
+              [class*="dropdown"] [class*="detail"] {
+                color: ${dark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.55)"} !important;
               }
 
-              /* Stat cards — keep rounded containers with subtle bg */
+              /* Stat cards — transparent bg, keep rounded border outline */
               [class*="card"], [class*="stat"], [class*="metric"],
               [class*="Card"], [class*="Stat"] {
-                background: ${cardBg} !important;
-                background-color: ${cardBg} !important;
+                background: transparent !important;
+                background-color: transparent !important;
                 border: 1px solid ${cardBorder} !important;
                 border-radius: 8px !important;
                 color: ${fg} !important;
@@ -553,13 +560,25 @@
             observer.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class"] });
 
             // Also poll since Recharts/React can set inline styles after render
-            setInterval(() => { fixTooltips(doc); fixDividers(doc); }, 200);
+            setInterval(() => { fixTooltips(doc); fixDividers(doc); fixDropdownText(doc); }, 200);
           } catch (e) {}
         });
 
+        function fixDropdownText(doc) {
+          const dark = document.documentElement.classList.contains("dark");
+          const textColor = dark ? "#e0e0e0" : "#000000";
+          const selectors = '[class*="dropdown"] li, [class*="Dropdown"] li, [role="option"], [role="listbox"] li';
+          doc.querySelectorAll(selectors).forEach(li => {
+            li.style.setProperty("color", textColor, "important");
+            li.querySelectorAll("*").forEach(child => {
+              child.style.setProperty("color", textColor, "important");
+            });
+          });
+        }
+
         function fixDividers(doc) {
           const dark = document.documentElement.classList.contains("dark");
-          const hrColor = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+          const hrColor = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
           doc.querySelectorAll("hr").forEach(hr => {
             hr.style.setProperty("border-color", hrColor, "important");
             hr.style.setProperty("border-top-color", hrColor, "important");
