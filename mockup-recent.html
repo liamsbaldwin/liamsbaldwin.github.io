@@ -130,6 +130,7 @@
         display: block;
         margin: 10px auto 0;
         width: 100%;
+        height: 800px;
         border: none;
         overflow: hidden;
         background: transparent;
@@ -324,31 +325,171 @@
         });
       })();
 
-      // Auto-resize iframe to match its content height (same origin)
+      // Restyle embedded college majors site to match homepage theme
       (function () {
         const iframe = document.getElementById("majors-embed");
         if (!iframe) return;
+        const isDark = () => document.documentElement.classList.contains("dark");
 
-        function resize() {
+        function injectStyles() {
           try {
             const doc = iframe.contentDocument || iframe.contentWindow.document;
             if (!doc || !doc.body) return;
-            // Make embedded page background transparent
-            doc.documentElement.style.background = "transparent";
-            doc.body.style.background = "transparent";
+
+            let style = doc.getElementById("embed-theme");
+            if (!style) {
+              style = doc.createElement("style");
+              style.id = "embed-theme";
+              doc.head.appendChild(style);
+            }
+
+            const dark = isDark();
+            const fg = dark ? "#e0e0e0" : "#1a1a1a";
+            const fgMuted = dark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.45)";
+            const inputBg = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)";
+            const inputBorder = dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)";
+            const cardBg = dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)";
+            const cardBorder = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+            const dropdownBg = dark ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.97)";
+            const btnBg = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)";
+            const btnActiveBg = dark ? "rgba(80,180,255,0.2)" : "rgba(0,120,255,0.1)";
+            const btnActiveColor = dark ? "#5cc8ff" : "#0070e0";
+            const accent = dark ? "#5cc8ff" : "#0070e0";
+            const hrColor = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+
+            style.textContent = `
+              /* Global */
+              html, body { background: transparent !important; color: ${fg} !important; }
+              body { transform: scale(0.85); transform-origin: top center; }
+              hr, [class*="divider"], [class*="separator"] {
+                border-color: ${hrColor} !important;
+                background: ${hrColor} !important;
+              }
+
+              /* Title & subtitle */
+              h1 { color: ${fg} !important; font-size: 1.6em !important; }
+              h1 + p, h1 ~ p:first-of-type, [class*="subtitle"], [class*="tagline"] {
+                color: ${fgMuted} !important; font-size: 0.85em !important;
+              }
+
+              /* Search bar */
+              input[type="text"], input[type="search"], input:not([type]),
+              [class*="search"] input, [class*="Search"] input {
+                background: ${inputBg} !important;
+                border: 1px solid ${inputBorder} !important;
+                color: ${fg} !important;
+                border-radius: 8px !important;
+                font-size: 0.9em !important;
+              }
+              input::placeholder { color: ${fgMuted} !important; }
+
+              /* Search dropdown / autocomplete */
+              [class*="dropdown"], [class*="Dropdown"],
+              [class*="suggestions"], [class*="Suggestions"],
+              [class*="listbox"], [role="listbox"],
+              ul[class*="search"], div[class*="results"] {
+                background: ${dropdownBg} !important;
+                border: 1px solid ${inputBorder} !important;
+                border-radius: 8px !important;
+                backdrop-filter: blur(12px) !important;
+                box-shadow: 0 4px 20px rgba(0,0,0,${dark ? "0.4" : "0.08"}) !important;
+              }
+              [class*="dropdown"] li, [class*="Dropdown"] li,
+              [class*="suggestions"] li, [role="option"],
+              [class*="dropdown"] div[class*="item"],
+              [class*="Dropdown"] div[class*="item"] {
+                color: ${fg} !important;
+                background: transparent !important;
+              }
+              [class*="dropdown"] li:hover, [role="option"]:hover,
+              [class*="dropdown"] li[aria-selected="true"],
+              [role="option"][aria-selected="true"],
+              [class*="dropdown"] div[class*="item"]:hover {
+                background: ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"} !important;
+              }
+              [class*="dropdown"] li small, [role="option"] small,
+              [class*="dropdown"] [class*="location"],
+              [class*="dropdown"] [class*="subtitle"] {
+                color: ${fgMuted} !important;
+              }
+
+              /* Stat cards */
+              [class*="card"], [class*="stat"], [class*="metric"],
+              [class*="Card"], [class*="Stat"] {
+                background: ${cardBg} !important;
+                border: 1px solid ${cardBorder} !important;
+                border-radius: 8px !important;
+                color: ${fg} !important;
+              }
+              [class*="card"] h2, [class*="card"] h3, [class*="card"] [class*="value"],
+              [class*="stat"] [class*="value"], [class*="Card"] [class*="value"] {
+                color: ${accent} !important;
+              }
+              [class*="card"] p, [class*="card"] small, [class*="card"] [class*="label"],
+              [class*="stat"] [class*="label"], [class*="Card"] [class*="label"] {
+                color: ${fgMuted} !important;
+              }
+
+              /* Filter buttons (degree level, earnings period) */
+              button, [class*="filter"], [class*="pill"], [class*="toggle"],
+              [class*="btn"]:not([class*="search"]) {
+                background: ${btnBg} !important;
+                border: 1px solid ${cardBorder} !important;
+                color: ${fg} !important;
+                border-radius: 6px !important;
+                font-size: 0.85em !important;
+              }
+              button:hover, [class*="filter"]:hover, [class*="pill"]:hover {
+                background: ${dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"} !important;
+              }
+              button[class*="active"], button[aria-pressed="true"],
+              [class*="active"], [class*="selected"] {
+                background: ${btnActiveBg} !important;
+                border-color: ${btnActiveColor} !important;
+                color: ${btnActiveColor} !important;
+              }
+
+              /* Chart area */
+              [class*="chart"], [class*="Chart"], svg {
+                color: ${fg} !important;
+              }
+              text { fill: ${fg} !important; }
+              line[class*="grid"], line[class*="tick"] {
+                stroke: ${hrColor} !important;
+              }
+
+              /* University name heading */
+              h2, h3 { color: ${fg} !important; }
+              [class*="school"], [class*="university"] { color: ${accent} !important; }
+
+              /* General muted text */
+              p, span, label, small, [class*="desc"] { color: ${fgMuted} !important; }
+              a { color: ${accent} !important; }
+            `;
+
+            // Resize iframe to content
             iframe.style.height = doc.documentElement.scrollHeight + "px";
-          } catch (e) { /* cross-origin fallback: fixed height */ iframe.style.height = "500px"; }
+          } catch (e) {
+            iframe.style.height = "800px";
+          }
         }
 
         iframe.addEventListener("load", () => {
-          resize();
-          // Watch for content changes (e.g. search results appearing)
+          injectStyles();
           try {
-            const observer = new MutationObserver(resize);
             const doc = iframe.contentDocument || iframe.contentWindow.document;
+            const observer = new MutationObserver(() => { injectStyles(); });
             observer.observe(doc.body, { childList: true, subtree: true, attributes: true });
           } catch (e) {}
         });
+
+        // Re-inject when homepage theme toggles
+        const themeBtn = document.querySelector(".theme-toggle");
+        if (themeBtn) {
+          themeBtn.addEventListener("click", () => {
+            setTimeout(injectStyles, 50);
+          });
+        }
       })();
     </script>
   </body>
