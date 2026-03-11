@@ -449,7 +449,7 @@
                 color: ${btnActiveColor} !important;
               }
 
-              /* Chart area */
+              /* Chart area — major labels should be full contrast */
               [class*="chart"], [class*="Chart"], svg {
                 color: ${fg} !important;
               }
@@ -458,12 +458,36 @@
                 stroke: ${hrColor} !important;
               }
 
+              /* Tooltips / popovers on bar hover */
+              [class*="tooltip"], [class*="Tooltip"],
+              [class*="popover"], [class*="Popover"],
+              [role="tooltip"], .recharts-tooltip-wrapper,
+              .recharts-default-tooltip,
+              div[class*="tooltip"], div[class*="Tooltip"] {
+                background: ${dark ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.97)"} !important;
+                color: ${fg} !important;
+                border: 1px solid ${dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)"} !important;
+                border-radius: 6px !important;
+                backdrop-filter: blur(12px) !important;
+                box-shadow: 0 4px 16px rgba(0,0,0,${dark ? "0.4" : "0.08"}) !important;
+              }
+              [class*="tooltip"] *, [class*="Tooltip"] *,
+              [role="tooltip"] *, .recharts-tooltip-wrapper * {
+                color: ${fg} !important;
+                fill: ${fg} !important;
+              }
+              [class*="tooltip"] [class*="label"], [class*="Tooltip"] [class*="label"],
+              .recharts-tooltip-label {
+                color: ${fg} !important;
+                font-weight: 600 !important;
+              }
+
               /* University name heading */
               h2, h3 { color: ${fg} !important; }
               [class*="school"], [class*="university"] { color: ${accent} !important; }
 
               /* General muted text */
-              p, span, label, small, [class*="desc"] { color: ${fgMuted} !important; }
+              p, label, small, [class*="desc"] { color: ${fgMuted} !important; }
               a { color: ${accent} !important; }
             `;
 
