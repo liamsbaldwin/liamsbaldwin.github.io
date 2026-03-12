@@ -72,12 +72,53 @@
             I am always excited to meet those who share my interests.
           </p>
           
-<!--        <p class="links">
-            <a href="mailto:you@example.com">email</a>,
-            <a href="https://twitter.com/yourhandle" target="_blank" rel="noreferrer">Twitter</a>,
-            <a href="https://www.linkedin.com/in/yourhandle" target="_blank" rel="noreferrer">LinkedIn</a>
-          </p>
--->
+          <!-- ── Recent ── -->
+          <div class="recent">
+            <h2>Recent</h2>
+            <ul class="recent-list">
+
+              <li class="recent-item" data-date="2026-03">
+                <div class="recent-row">
+                  <span class="recent-date">Mar 2026</span>
+                  <span class="recent-entry">
+                    <a href="https://liambaldwin.substack.com/p/what-should-you-major-in-and-how">What should you major in, and how much will you make?</a>
+                    <span class="recent-entry-group">
+                      <span class="recent-type">blog</span>
+                      <button class="recent-expand" type="button" aria-label="Show description">
+                        <span class="recent-expand-icon">&#9660;</span>
+                      </button>
+                    </span>
+                  </span>
+                </div>
+                <div class="recent-desc">
+                  Some context, a few brief points on why major choice matters, and a <a href="https://liamsbaldwin.github.io/collegemajors/">website</a> I made which compares majors by earnings for <span style="display:inline-block;transform:translateY(2px)">~</span>all US institutions:
+                  <div class="embed-wrap">
+                    <iframe id="majors-embed" src="about:blank" data-src="https://liamsbaldwin.github.io/collegemajors/" scrolling="no" title="College Majors Explorer"></iframe>
+                  </div>
+                </div>
+              </li>
+
+              <li class="recent-item" data-date="2025-05">
+                <div class="recent-row">
+                  <span class="recent-date">May 2025</span>
+                  <span class="recent-entry">
+                    <a href="#">Placeholder Entry</a>
+                    <span class="recent-entry-group">
+                      <span class="recent-type">blog</span>
+                      <button class="recent-expand" type="button" aria-label="Show description">
+                        <span class="recent-expand-icon">&#9660;</span>
+                      </button>
+                    </span>
+                  </span>
+                </div>
+                <div class="recent-desc">
+                  Placeholder description for testing date-based suppression.
+                </div>
+              </li>
+
+            </ul>
+          </div>
+
         </div>
       </div>
     </main>
@@ -98,19 +139,338 @@
     </button>
 
     <script>
+      // Dark mode
       (function () {
         const KEY = "theme";
         const root = document.documentElement;
         const btn = document.getElementById("themeToggle");
-
-        // load saved theme
         const saved = localStorage.getItem(KEY);
         if (saved === "dark") root.classList.add("dark");
-
         btn.addEventListener("click", () => {
           root.classList.toggle("dark");
           localStorage.setItem(KEY, root.classList.contains("dark") ? "dark" : "light");
         });
+      })();
+
+      // Hide entries older than 4 months
+      (function () {
+        const now = new Date();
+        const cutoff = new Date(now.getFullYear(), now.getMonth() - 4, 1);
+        const items = document.querySelectorAll(".recent-item[data-date]");
+        let lastVisible = null;
+        items.forEach((item) => {
+          const [y, m] = item.dataset.date.split("-").map(Number);
+          const entryDate = new Date(y, m - 1, 1);
+          if (entryDate < cutoff) {
+            item.style.display = "none";
+          } else {
+            lastVisible = item;
+          }
+        });
+        if (lastVisible) lastVisible.style.borderBottom = "none";
+      })();
+
+      // Expand/collapse descriptions
+      (function () {
+        document.querySelectorAll(".recent-expand").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const item = btn.closest(".recent-item");
+            item.classList.toggle("open");
+            btn.setAttribute("aria-label",
+              item.classList.contains("open") ? "Hide description" : "Show description"
+            );
+
+            // Lazy-load iframe on first expand
+            const iframe = item.querySelector("iframe[data-src]");
+            if (iframe && item.classList.contains("open") && iframe.src === "about:blank") {
+              iframe.src = iframe.dataset.src;
+            }
+          });
+        });
+      })();
+
+      // Restyle embedded college majors site to match homepage theme
+      (function () {
+        const iframe = document.getElementById("majors-embed");
+        if (!iframe) return;
+        const isDark = () => document.documentElement.classList.contains("dark");
+
+        function injectStyles() {
+          try {
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!doc || !doc.body) return;
+
+            let style = doc.getElementById("embed-theme");
+            if (!style) {
+              style = doc.createElement("style");
+              style.id = "embed-theme";
+              doc.head.appendChild(style);
+            }
+
+            const dark = isDark();
+            const fg = dark ? "#e0e0e0" : "#1a1a1a";
+            const fgMuted = dark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.45)";
+            const inputBg = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)";
+            const inputBorder = dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)";
+            const cardBorder = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+            const dropdownBg = dark ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.97)";
+            const btnBg = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)";
+            const btnActiveBg = dark ? "rgba(80,180,255,0.2)" : "rgba(0,120,255,0.1)";
+            const btnActiveColor = dark ? "#5cc8ff" : "#0070e0";
+            const accent = dark ? "#5cc8ff" : "#0070e0";
+
+            style.textContent = `
+              /* Global */
+              html, body { background: transparent !important; color: ${fg} !important; }
+              body { transform: scale(0.85); transform-origin: top center; margin-top: -10px !important; padding-top: 0 !important; }
+              /* Global border color — fixes dividers (border-bottom on containers) */
+              * { border-color: ${cardBorder} !important; }
+              hr, [class*="divider"], [class*="separator"], [class*="Divider"] {
+                background: ${cardBorder} !important;
+                background-color: ${cardBorder} !important;
+                opacity: 1 !important;
+              }
+
+              /* Title & subtitle */
+              h1 { color: ${fg} !important; font-size: 1.6em !important; }
+              h1 + p, h1 ~ p:first-of-type, [class*="subtitle"], [class*="tagline"] {
+                color: ${fgMuted} !important; font-size: 0.85em !important;
+              }
+
+              /* Remove any dark header/hero background bars */
+              header, [class*="header"], [class*="Header"],
+              [class*="hero"], [class*="Hero"],
+              [class*="banner"], [class*="Banner"],
+              [class*="top-bar"], [class*="topbar"],
+              nav, [class*="nav"], [class*="Nav"] {
+                background: transparent !important;
+                background-color: transparent !important;
+              }
+
+              /* Search bar */
+              input[type="text"], input[type="search"], input:not([type]),
+              [class*="search"] input, [class*="Search"] input {
+                background: ${inputBg} !important;
+                border: 1px solid ${inputBorder} !important;
+                color: ${fg} !important;
+                border-radius: 8px !important;
+                font-size: 0.9em !important;
+              }
+              input::placeholder { color: ${fgMuted} !important; }
+
+              /* Search dropdown / autocomplete */
+              [class*="dropdown"], [class*="Dropdown"],
+              [class*="suggestions"], [class*="Suggestions"],
+              [class*="listbox"], [role="listbox"],
+              ul[class*="search"], div[class*="results"] {
+                background: ${dropdownBg} !important;
+                border: 1px solid ${inputBorder} !important;
+                border-radius: 8px !important;
+                backdrop-filter: blur(12px) !important;
+                box-shadow: 0 4px 20px rgba(0,0,0,${dark ? "0.4" : "0.08"}) !important;
+              }
+              [class*="dropdown"] li, [class*="Dropdown"] li,
+              [class*="suggestions"] li, [role="option"],
+              [class*="dropdown"] div[class*="item"],
+              [class*="Dropdown"] div[class*="item"] {
+                color: ${fg} !important;
+                background: transparent !important;
+              }
+              [class*="dropdown"] li:hover, [role="option"]:hover,
+              [class*="dropdown"] li[aria-selected="true"],
+              [role="option"][aria-selected="true"],
+              [class*="dropdown"] div[class*="item"]:hover {
+                background: ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"} !important;
+              }
+              /* School names in search dropdown — force full contrast */
+              [class*="dropdown"] li, [class*="Dropdown"] li,
+              [class*="dropdown"] [class*="name"], [class*="Dropdown"] [class*="name"],
+              [class*="dropdown"] [class*="school"], [class*="Dropdown"] [class*="school"],
+              [class*="dropdown"] [class*="title"], [class*="Dropdown"] [class*="title"],
+              [class*="dropdown"] span, [class*="Dropdown"] span,
+              [class*="dropdown"] div, [class*="Dropdown"] div,
+              [class*="dropdown"] p, [class*="Dropdown"] p,
+              [class*="dropdown"] a, [class*="Dropdown"] a,
+              [role="option"], [role="option"] *,
+              [class*="suggestion"] *, [class*="Suggestion"] *,
+              [class*="result"] *, [class*="Result"] *,
+              [role="listbox"] *, [role="listbox"] li {
+                color: ${dark ? "#e0e0e0" : "#000000"} !important;
+              }
+              /* Muted secondary text in dropdown (location, subtitle) */
+              [class*="dropdown"] li small, [role="option"] small,
+              [class*="dropdown"] [class*="location"],
+              [class*="dropdown"] [class*="subtitle"],
+              [class*="dropdown"] [class*="secondary"],
+              [class*="dropdown"] [class*="detail"] {
+                color: ${dark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.55)"} !important;
+              }
+
+              /* Stat cards — transparent bg, no added stroke */
+              [class*="card"], [class*="stat"], [class*="metric"],
+              [class*="Card"], [class*="Stat"] {
+                background: transparent !important;
+                background-color: transparent !important;
+                color: ${fg} !important;
+              }
+              [class*="card"] h2, [class*="card"] h3, [class*="card"] [class*="value"],
+              [class*="stat"] [class*="value"], [class*="Card"] [class*="value"] {
+                color: ${accent} !important;
+              }
+              [class*="card"] p, [class*="card"] small, [class*="card"] [class*="label"],
+              [class*="stat"] [class*="label"], [class*="Card"] [class*="label"] {
+                color: ${fgMuted} !important;
+              }
+
+              /* Filter buttons (degree level, earnings period) */
+              button, [class*="filter"], [class*="pill"], [class*="toggle"],
+              [class*="btn"]:not([class*="search"]) {
+                background: ${btnBg} !important;
+                border: none !important;
+                color: ${fg} !important;
+                border-radius: 6px !important;
+                font-size: 0.85em !important;
+              }
+              button:hover, [class*="filter"]:hover, [class*="pill"]:hover {
+                background: ${dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"} !important;
+              }
+              button[class*="active"], button[aria-pressed="true"],
+              [class*="active"], [class*="selected"] {
+                background: ${btnActiveBg} !important;
+                border: none !important;
+                color: ${btnActiveColor} !important;
+              }
+
+              /* Chart area — major labels should be full contrast */
+              [class*="chart"], [class*="Chart"], svg {
+                color: ${fg} !important;
+              }
+              text { fill: ${fg} !important; }
+              line[class*="grid"], line[class*="tick"] {
+                stroke: ${cardBorder} !important;
+              }
+
+              /* Tooltips / popovers on bar hover */
+              [class*="tooltip"], [class*="Tooltip"],
+              [class*="popover"], [class*="Popover"],
+              [role="tooltip"], .recharts-tooltip-wrapper,
+              .recharts-default-tooltip,
+              .recharts-tooltip-wrapper > div,
+              div[class*="tooltip"], div[class*="Tooltip"] {
+                background: ${dark ? "#1e1e1e" : "#ffffff"} !important;
+                background-color: ${dark ? "#1e1e1e" : "#ffffff"} !important;
+                color: ${dark ? "#e0e0e0" : "#666666"} !important;
+                border: 1px solid ${dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)"} !important;
+                border-radius: 6px !important;
+                box-shadow: 0 4px 16px rgba(0,0,0,${dark ? "0.4" : "0.1"}) !important;
+              }
+              [class*="tooltip"] *, [class*="Tooltip"] *,
+              [role="tooltip"] *, .recharts-tooltip-wrapper *,
+              .recharts-default-tooltip * {
+                color: ${dark ? "#e0e0e0" : "#666666"} !important;
+                fill: ${dark ? "#e0e0e0" : "#666666"} !important;
+                background: transparent !important;
+                background-color: transparent !important;
+              }
+              .recharts-tooltip-label, .recharts-tooltip-item,
+              [class*="tooltip"] [class*="label"], [class*="Tooltip"] [class*="label"] {
+                color: ${dark ? "#e0e0e0" : "#555555"} !important;
+                font-weight: 600 !important;
+              }
+
+              /* University name heading */
+              h2, h3 { color: ${fg} !important; }
+              [class*="school"], [class*="university"] { color: ${fg} !important; }
+
+              /* General muted text */
+              p, label, small, [class*="desc"] { color: ${fgMuted} !important; }
+              a { color: ${accent} !important; }
+            `;
+
+            // Resize iframe to content
+            const h = doc.documentElement.scrollHeight;
+            iframe.style.height = Math.max(h, 1400) + "px";
+
+          } catch (e) {
+            iframe.style.height = "1400px";
+          }
+        }
+
+        iframe.addEventListener("load", () => {
+          injectStyles();
+          try {
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            const observer = new MutationObserver(() => {
+              injectStyles();
+              fixTooltips(doc);
+              fixDividers(doc);
+            });
+            observer.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class"] });
+
+            // Also poll since Recharts/React can set inline styles after render
+            setInterval(() => { fixTooltips(doc); fixDividers(doc); fixDropdownText(doc); }, 200);
+          } catch (e) {}
+        });
+
+        function fixDropdownText(doc) {
+          const dark = document.documentElement.classList.contains("dark");
+          const textColor = dark ? "#e0e0e0" : "#000000";
+          const selectors = '[class*="dropdown"] li, [class*="Dropdown"] li, [role="option"], [role="listbox"] li';
+          doc.querySelectorAll(selectors).forEach(li => {
+            li.style.setProperty("color", textColor, "important");
+            li.querySelectorAll("*").forEach(child => {
+              child.style.setProperty("color", textColor, "important");
+            });
+          });
+        }
+
+        function fixDividers(doc) {
+          const dark = document.documentElement.classList.contains("dark");
+          const c = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+          doc.querySelectorAll("hr").forEach(hr => {
+            hr.style.setProperty("border-color", c, "important");
+            hr.style.setProperty("background", c, "important");
+          });
+          doc.querySelectorAll("[style]").forEach(el => {
+            const s = el.getAttribute("style") || "";
+            if (s.includes("border")) {
+              el.style.setProperty("border-color", c, "important");
+            }
+          });
+        }
+
+        function fixTooltips(doc) {
+          const dark = document.documentElement.classList.contains("dark");
+          const fg = dark ? "#e0e0e0" : "#666666";
+          const bg = dark ? "#1e1e1e" : "#ffffff";
+          const borderColor = dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)";
+          const shadow = "0 4px 16px rgba(0,0,0," + (dark ? "0.4" : "0.1") + ")";
+          const els = doc.querySelectorAll(
+            '.recharts-tooltip-wrapper, .recharts-default-tooltip, [class*="tooltip"], [class*="Tooltip"], [role="tooltip"]'
+          );
+          els.forEach(el => {
+            [el, ...el.querySelectorAll("div")].forEach((d, i) => {
+              if (i <= 1 || (d.className && String(d.className).match(/tooltip/i))) {
+                d.style.setProperty("background", bg, "important");
+                d.style.setProperty("background-color", bg, "important");
+                d.style.setProperty("border-color", borderColor, "important");
+                d.style.setProperty("box-shadow", shadow, "important");
+              }
+            });
+            el.querySelectorAll("*").forEach(child => {
+              child.style.setProperty("color", fg, "important");
+            });
+            el.style.setProperty("color", fg, "important");
+          });
+        }
+
+        // Re-inject when homepage theme toggles
+        const themeBtn = document.querySelector(".theme-toggle");
+        if (themeBtn) {
+          themeBtn.addEventListener("click", () => {
+            setTimeout(injectStyles, 50);
+          });
+        }
       })();
     </script>
 

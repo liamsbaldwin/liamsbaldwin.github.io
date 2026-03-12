@@ -552,3 +552,142 @@ a { color: #1a73e8; }
   width: 18px;
   height: 18px;
 }
+
+/* ── Recent section ── */
+.recent {
+  margin-top: 36px;
+}
+.recent h2 {
+  margin-top: 0;
+}
+.recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.recent-item {
+  border-bottom: 1px solid rgba(0,0,0,0.15);
+}
+html.dark .recent-item {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+.recent-item:last-child {
+  border-bottom: none;
+}
+
+/* Top row: date | title | type | chevron */
+.recent-row {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 7px 0;
+}
+.recent-date {
+  font-size: 14px;
+  color: rgba(0,0,0,0.4);
+  white-space: nowrap;
+  min-width: 72px;
+}
+html.dark .recent-date {
+  color: rgba(255,255,255,0.4);
+}
+.recent-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.recent-entry-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Type label (plain, no interaction) */
+.recent-type {
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.05);
+  font-size: 12.5px;
+  color: rgba(0,0,0,0.38);
+  white-space: nowrap;
+  line-height: 1.5;
+}
+html.dark .recent-type {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.38);
+}
+
+/* Expand chevron button */
+.recent-expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  font-size: 8px;
+  color: rgba(0,0,0,0.25);
+  transition: color 140ms;
+  line-height: 1;
+}
+.recent-expand:hover {
+  color: rgba(0,0,0,0.5);
+}
+html.dark .recent-expand {
+  color: rgba(255,255,255,0.25);
+}
+html.dark .recent-expand:hover {
+  color: rgba(255,255,255,0.5);
+}
+.recent-expand-icon {
+  display: inline-block;
+  transition: transform 200ms ease;
+}
+.recent-item.open .recent-expand-icon {
+  transform: rotate(180deg);
+}
+
+/* Expandable description */
+.recent-desc {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 400ms ease, opacity 200ms ease, padding 200ms ease;
+  padding: 0 0 0 92px; /* align with title (72px date + 20px gap) */
+  font-size: 15px;
+  color: rgba(0,0,0,0.55);
+  line-height: 1.5;
+}
+html.dark .recent-desc {
+  color: rgba(255,255,255,0.50);
+}
+.recent-item.open .recent-desc {
+  max-height: none;
+  opacity: 1;
+  padding-top: 2px;
+  padding-bottom: 10px;
+  overflow: visible;
+}
+.recent-desc iframe {
+  display: block;
+  margin: 2px auto 0;
+  width: 100%;
+  min-height: 1400px;
+  border: none;
+  overflow: hidden;
+  background: transparent;
+}
+.recent-desc .embed-wrap {
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .recent-desc .embed-wrap {
+    display: none;
+  }
+}
