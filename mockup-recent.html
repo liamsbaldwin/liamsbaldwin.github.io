@@ -129,7 +129,7 @@
       }
       .recent-desc iframe {
         display: block;
-        margin: 10px auto 0;
+        margin: 2px auto 0;
         width: 100%;
         min-height: 1400px;
         border: none;
@@ -196,7 +196,7 @@
                   </span>
                 </div>
                 <div class="recent-desc">
-                  Some context, a few brief points on why major choice matters, and a <a href="https://liamsbaldwin.github.io/collegemajors/">website</a> I made which compares majors by earnings for ~all US institutions.
+                  Some context, a few brief points on why major choice matters, and a <a href="https://liamsbaldwin.github.io/collegemajors/">website</a> I made which compares majors by earnings for ≈all US institutions:
                   <div class="embed-wrap">
                     <iframe id="majors-embed" src="about:blank" data-src="https://liamsbaldwin.github.io/collegemajors/" scrolling="no" title="College Majors Explorer"></iframe>
                   </div>
@@ -366,7 +366,7 @@
             style.textContent = `
               /* Global */
               html, body { background: transparent !important; color: ${fg} !important; }
-              body { transform: scale(0.85); transform-origin: top center; }
+              body { transform: scale(0.85); transform-origin: top center; margin-top: -10px !important; padding-top: 0 !important; }
               /* Global border color — fixes dividers (border-bottom on containers) */
               * { border-color: ${cardBorder} !important; }
               hr, [class*="divider"], [class*="separator"], [class*="Divider"] {
