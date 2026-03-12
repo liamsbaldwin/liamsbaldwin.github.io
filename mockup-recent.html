@@ -196,7 +196,7 @@
                   </span>
                 </div>
                 <div class="recent-desc">
-                  Some context, a few brief points on why major choice matters, and a <a href="https://liamsbaldwin.github.io/collegemajors/">website</a> I made which compares majors by earnings for ≈all US institutions:
+                  Some context, a few brief points on why major choice matters, and a <a href="https://liamsbaldwin.github.io/collegemajors/">website</a> I made which compares majors by earnings for <span style="display:inline-block;transform:translateY(2px)">~</span>all US institutions:
                   <div class="embed-wrap">
                     <iframe id="majors-embed" src="about:blank" data-src="https://liamsbaldwin.github.io/collegemajors/" scrolling="no" title="College Majors Explorer"></iframe>
                   </div>
@@ -503,7 +503,7 @@
               div[class*="tooltip"], div[class*="Tooltip"] {
                 background: ${dark ? "#1e1e1e" : "#ffffff"} !important;
                 background-color: ${dark ? "#1e1e1e" : "#ffffff"} !important;
-                color: ${fg} !important;
+                color: ${dark ? "#e0e0e0" : "#666666"} !important;
                 border: 1px solid ${dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)"} !important;
                 border-radius: 6px !important;
                 box-shadow: 0 4px 16px rgba(0,0,0,${dark ? "0.4" : "0.1"}) !important;
@@ -511,14 +511,14 @@
               [class*="tooltip"] *, [class*="Tooltip"] *,
               [role="tooltip"] *, .recharts-tooltip-wrapper *,
               .recharts-default-tooltip * {
-                color: ${fg} !important;
-                fill: ${fg} !important;
+                color: ${dark ? "#e0e0e0" : "#666666"} !important;
+                fill: ${dark ? "#e0e0e0" : "#666666"} !important;
                 background: transparent !important;
                 background-color: transparent !important;
               }
               .recharts-tooltip-label, .recharts-tooltip-item,
               [class*="tooltip"] [class*="label"], [class*="Tooltip"] [class*="label"] {
-                color: ${fg} !important;
+                color: ${dark ? "#e0e0e0" : "#555555"} !important;
                 font-weight: 600 !important;
               }
 
@@ -589,7 +589,7 @@
 
         function fixTooltips(doc) {
           const dark = document.documentElement.classList.contains("dark");
-          const fg = dark ? "#e0e0e0" : "#1a1a1a";
+          const fg = dark ? "#e0e0e0" : "#666666";
           const bg = dark ? "#1e1e1e" : "#ffffff";
           const borderColor = dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)";
           const shadow = "0 4px 16px rgba(0,0,0," + (dark ? "0.4" : "0.1") + ")";
