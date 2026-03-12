@@ -624,14 +624,14 @@ html.dark .recent-type {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: 3px;
   background: transparent;
   cursor: pointer;
   padding: 0;
-  font-size: 11px;
+  font-size: 14px;
   color: rgba(0,0,0,0.25);
   transition: color 140ms;
   line-height: 1;

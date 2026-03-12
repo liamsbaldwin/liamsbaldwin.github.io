@@ -398,8 +398,17 @@
 
         iframe.addEventListener("load", () => {
           injectStyles();
-          // Fade in after styles are applied so the dark bg never flashes
-          setTimeout(() => iframe.classList.add("loaded"), 100);
+          // Keep injecting styles until React renders, then fade in
+          let fadeAttempts = 0;
+          const fadeCheck = setInterval(() => {
+            injectStyles();
+            fadeAttempts++;
+            // Fade in after enough attempts (covers React hydration)
+            if (fadeAttempts >= 8) { // ~800ms
+              iframe.classList.add("loaded");
+              clearInterval(fadeCheck);
+            }
+          }, 100);
           try {
             const doc = iframe.contentDocument || iframe.contentWindow.document;
             const observer = new MutationObserver(() => {
