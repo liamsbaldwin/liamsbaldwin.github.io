@@ -682,6 +682,11 @@ html.dark .recent-desc {
   border: none;
   overflow: hidden;
   background: transparent;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.recent-desc iframe.loaded {
+  opacity: 1;
 }
 .recent-desc .embed-wrap {
   text-align: center;
