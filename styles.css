@@ -696,3 +696,54 @@ html.dark .recent-desc {
     display: none;
   }
 }
+
+/* ── Reading Group section ── */
+.reading-group-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.reading-group-item {
+  border-bottom: 1px solid rgba(0,0,0,0.15);
+}
+html.dark .reading-group-item {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+.reading-group-item:last-child {
+  border-bottom: none;
+}
+.reading-group-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 0;
+  flex-wrap: wrap;
+}
+.reading-group-authors {
+  font-size: 14px;
+  color: rgba(0,0,0,0.4);
+  white-space: nowrap;
+}
+html.dark .reading-group-authors {
+  color: rgba(255,255,255,0.4);
+}
+.reading-group-notes {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 400ms ease, opacity 200ms ease, padding 200ms ease;
+  padding: 0 0 0 0;
+  font-size: 15px;
+  color: rgba(0,0,0,0.55);
+  line-height: 1.5;
+}
+html.dark .reading-group-notes {
+  color: rgba(255,255,255,0.50);
+}
+.reading-group-item.open .reading-group-notes {
+  max-height: none;
+  opacity: 1;
+  padding-top: 2px;
+  padding-bottom: 10px;
+  overflow: visible;
+}
