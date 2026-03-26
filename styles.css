@@ -715,17 +715,31 @@ html.dark .reading-group-item {
 .reading-group-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
   padding: 7px 0;
   flex-wrap: wrap;
 }
+.reading-group-row > a {
+  flex: 1;
+  min-width: 0;
+}
+.reading-group-entry-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
 .reading-group-authors {
-  font-size: 14px;
-  color: rgba(0,0,0,0.4);
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.05);
+  font-size: 12.5px;
+  color: rgba(0,0,0,0.38);
   white-space: nowrap;
+  line-height: 1.5;
 }
 html.dark .reading-group-authors {
-  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.38);
 }
 .reading-group-notes {
   overflow: hidden;
