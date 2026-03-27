@@ -733,12 +733,11 @@ html.dark .reading-group-authors {
   opacity: 0;
   transition: max-height 400ms ease, opacity 200ms ease, padding 200ms ease;
   padding: 0 0 0 0;
-  font-size: 15px;
-  color: rgba(0,0,0,0.55);
-  line-height: 1.5;
+  font-size: inherit;
+  line-height: 1.55;
 }
 html.dark .reading-group-notes {
-  color: rgba(255,255,255,0.50);
+  color: #ffffff;
 }
 .reading-group-item.open .reading-group-notes {
   max-height: none;
