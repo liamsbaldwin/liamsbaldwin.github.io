@@ -649,7 +649,8 @@ html.dark .recent-expand:hover {
   display: inline-block;
   transition: transform 200ms ease;
 }
-.recent-item.open .recent-expand-icon {
+.recent-item.open .recent-expand-icon,
+.reading-group-item.open .recent-expand-icon {
   transform: rotate(180deg);
 }
 
