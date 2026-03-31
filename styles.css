@@ -447,6 +447,8 @@ html.dark .book-card:focus-visible {
 }
 
 .review-link {
+  position: relative;
+  z-index: 1;
   margin-top: 8px;
   font-size: 13px;
   color: #1a73e8;
