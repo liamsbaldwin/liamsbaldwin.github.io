@@ -749,3 +749,22 @@ html.dark .reading-group-notes {
   padding-bottom: 10px;
   overflow: visible;
 }
+.reading-group-notes .footnotes {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 0.9em;
+}
+html.dark .reading-group-notes .footnotes {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+.reading-group-notes .footnotes p {
+  margin-bottom: 16px;
+}
+.reading-group-notes .footnotes sup {
+  font-size: 1em;
+  vertical-align: baseline;
+}
+.reading-group-notes .footnotes sup a {
+  color: inherit;
+}
