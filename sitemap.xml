@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://liamsbaldwin.github.io/</loc>
+    <loc>https://liambald.win/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://liamsbaldwin.github.io/reading.html</loc>
+    <loc>https://liambald.win/reading.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://liamsbaldwin.github.io/reviews/working.html</loc>
+    <loc>https://liambald.win/reviews/working.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://liamsbaldwin.github.io/reviews/becker-posner.html</loc>
+    <loc>https://liambald.win/reviews/becker-posner.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://liamsbaldwin.github.io/reviews/mostly-harmless.html</loc>
+    <loc>https://liambald.win/reviews/mostly-harmless.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://liamsbaldwin.github.io/reviews/wip-21.html</loc>
+    <loc>https://liambald.win/reviews/wip-21.html</loc>
     <priority>0.7</priority>
   </url>
 </urlset>

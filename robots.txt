@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://liamsbaldwin.github.io/sitemap.xml
+Sitemap: https://liambald.win/sitemap.xml

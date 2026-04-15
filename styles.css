@@ -447,9 +447,11 @@ html.dark .book-card:focus-visible {
 }
 
 .review-link {
+  position: relative;
+  z-index: 1;
   margin-top: 8px;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.4);
+  color: #1a73e8;
   text-decoration: none;
   opacity: 0;
   transition: opacity 180ms ease, transform 180ms ease;
@@ -649,7 +651,8 @@ html.dark .recent-expand:hover {
   display: inline-block;
   transition: transform 200ms ease;
 }
-.recent-item.open .recent-expand-icon {
+.recent-item.open .recent-expand-icon,
+.reading-group-item.open .recent-expand-icon {
   transform: rotate(180deg);
 }
 
@@ -766,4 +769,23 @@ html.dark .reading-group-notes {
   padding-top: 2px;
   padding-bottom: 10px;
   overflow: visible;
+}
+.reading-group-notes .footnotes {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 0.9em;
+}
+html.dark .reading-group-notes .footnotes {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+.reading-group-notes .footnotes p {
+  margin-bottom: 16px;
+}
+.reading-group-notes .footnotes sup {
+  font-size: 1em;
+  vertical-align: baseline;
+}
+.reading-group-notes .footnotes sup a {
+  color: inherit;
 }
