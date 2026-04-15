@@ -706,6 +706,27 @@ html.dark .recent-desc {
   padding: 0;
   margin: 0;
 }
+/* Week-level collapse */
+.reading-group-week-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reading-group-week .reading-group-list {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 400ms ease, opacity 200ms ease;
+}
+.reading-group-week.open .reading-group-list {
+  max-height: none;
+  opacity: 1;
+  overflow: visible;
+}
+.reading-group-week.open > .reading-group-week-heading .recent-expand-icon {
+  transform: rotate(180deg);
+}
+
 .reading-group-item {
   border-bottom: 1px solid rgba(0,0,0,0.15);
 }

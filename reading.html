@@ -316,6 +316,35 @@
         });
       })();
 
+      // Sort weeks by date descending, expand most recent, collapse the rest
+      (function () {
+        var container = document.querySelector(".reading-group");
+        if (!container) return;
+        var weeks = Array.from(container.querySelectorAll(".reading-group-week"));
+        weeks.sort(function (a, b) {
+          return b.dataset.date.localeCompare(a.dataset.date);
+        });
+        weeks.forEach(function (week, i) {
+          container.appendChild(week);
+          if (i === 0) {
+            week.classList.add("open");
+          }
+        });
+      })();
+
+      // Expand/collapse week headings
+      (function () {
+        document.querySelectorAll(".reading-group-week-heading .recent-expand").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var week = btn.closest(".reading-group-week");
+            week.classList.toggle("open");
+            btn.setAttribute("aria-label",
+              week.classList.contains("open") ? "Hide week" : "Show week"
+            );
+          });
+        });
+      })();
+
       // Expand/collapse reading group notes
       (function () {
         document.querySelectorAll(".reading-group-item .recent-expand").forEach(function (btn) {
