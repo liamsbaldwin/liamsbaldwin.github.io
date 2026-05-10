@@ -150,6 +150,8 @@ p {
   margin: 0 0 22px 0;
   font-size: inherit; /* inherit from body (21.5px) */
   max-width: none;
+  text-align: justify;
+  hyphens: auto;
 }
 
 a {
@@ -208,6 +210,8 @@ h3 {
 
 .reading-list li {
   margin-bottom: 10px;
+  text-align: justify;
+  hyphens: auto;
 }
 
 /* Footnotes */
