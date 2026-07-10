@@ -100,14 +100,16 @@ body {
   column-gap: var(--gap);
 }
 
-/* photo column: stack + centered */
+/* photo column: just the picture participates in the grid row, so its own
+   center (not the caption below it) lines up with the center of .intro */
 .photo-col {
   display: flex;
   flex-direction: column;
   align-items: center;
   grid-column: 1;
   grid-row: 1;
-  align-self: center; /* vertically center photo against .intro (same row) */
+  align-self: center; /* vertically center picture against .intro (same row) */
+  position: relative;
 }
 
 /* lets .intro / .recent participate directly in the .layout grid */
@@ -141,12 +143,18 @@ html.dark .photo {
   border-color: #aaa; /* light grey in dark mode */
 }
 
-/* caption under the image */
+/* caption under the image; taken out of flow so it doesn't shift the
+   picture's own center away from the center of .intro */
 .photo-caption {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   margin-top: 8px;
   font-size: 14px;
   color: #9a9a9a;
   text-align: center;
+  white-space: nowrap;
 }
 
 h1 {
@@ -194,6 +202,13 @@ a:hover {
   .photo-col {
     width: min(320px, 100%);
     align-self: start;
+  }
+
+  .photo-caption {
+    position: static; /* back in flow so it doesn't overlap the bio text */
+    transform: none;
+    margin-top: 8px;
+    white-space: normal;
   }
 
   .photo {
