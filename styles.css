@@ -110,6 +110,7 @@ body {
   grid-row: 1;
   align-self: center; /* vertically center picture against .intro (same row) */
   position: relative;
+  transform: translateY(-20px); /* nudge up slightly from dead-center */
 }
 
 /* lets .intro / .recent participate directly in the .layout grid */
@@ -202,6 +203,7 @@ a:hover {
   .photo-col {
     width: min(320px, 100%);
     align-self: start;
+    transform: none; /* no centering nudge needed when top-aligned */
   }
 
   .photo-caption {
