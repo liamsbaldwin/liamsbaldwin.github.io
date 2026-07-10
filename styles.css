@@ -95,9 +95,9 @@ body {
 }
 
 .layout {
-  display: flex;
-  gap: var(--gap);
-  align-items: flex-start; /* align tops of photo and content */
+  display: grid;
+  grid-template-columns: auto minmax(0, 950px);
+  column-gap: var(--gap);
 }
 
 /* photo column: stack + centered */
@@ -105,8 +105,25 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 auto;
-  margin-top: 8px; /* align top of photo border with top of "L" in Liam */
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center; /* vertically center photo against .intro (same row) */
+}
+
+/* lets .intro / .recent participate directly in the .layout grid */
+.content {
+  display: contents;
+}
+
+/* h1 + intro paragraphs: the block the photo is centered against */
+.intro {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.recent {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 /* image itself */
@@ -130,13 +147,6 @@ html.dark .photo {
   font-size: 14px;
   color: #9a9a9a;
   text-align: center;
-}
-
-/* content should expand and be allowed to get wide */
-.content {
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: 950px; /* widen your text block (adjust as you like) */
 }
 
 h1 {
@@ -170,13 +180,20 @@ a:hover {
   }
 
   .layout {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
+    grid-template-columns: 1fr;
+    row-gap: 18px;
+  }
+
+  .photo-col,
+  .intro,
+  .recent {
+    grid-column: 1;
+    grid-row: auto; /* stack in DOM order: photo, intro, recent */
   }
 
   .photo-col {
     width: min(320px, 100%);
+    align-self: start;
   }
 
   .photo {
