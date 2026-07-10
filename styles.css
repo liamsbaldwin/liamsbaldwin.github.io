@@ -95,18 +95,37 @@ body {
 }
 
 .layout {
-  display: flex;
-  gap: var(--gap);
-  align-items: flex-start; /* align tops of photo and content */
+  display: grid;
+  grid-template-columns: auto minmax(0, 950px);
+  column-gap: var(--gap);
 }
 
-/* photo column: stack + centered */
+/* photo column: just the picture participates in the grid row, so its own
+   center (not the caption below it) lines up with the center of .intro */
 .photo-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 auto;
-  margin-top: 8px; /* align top of photo border with top of "L" in Liam */
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center; /* vertically center picture against .intro (same row) */
+  position: relative;
+}
+
+/* lets .intro / .recent participate directly in the .layout grid */
+.content {
+  display: contents;
+}
+
+/* h1 + intro paragraphs: the block the photo is centered against */
+.intro {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.recent {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 /* image itself */
@@ -124,19 +143,18 @@ html.dark .photo {
   border-color: #aaa; /* light grey in dark mode */
 }
 
-/* caption under the image */
+/* caption under the image; taken out of flow so it doesn't shift the
+   picture's own center away from the center of .intro */
 .photo-caption {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   margin-top: 8px;
   font-size: 14px;
   color: #9a9a9a;
   text-align: center;
-}
-
-/* content should expand and be allowed to get wide */
-.content {
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: 950px; /* widen your text block (adjust as you like) */
+  white-space: nowrap;
 }
 
 h1 {
@@ -170,13 +188,27 @@ a:hover {
   }
 
   .layout {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
+    grid-template-columns: 1fr;
+    row-gap: 18px;
+  }
+
+  .photo-col,
+  .intro,
+  .recent {
+    grid-column: 1;
+    grid-row: auto; /* stack in DOM order: photo, intro, recent */
   }
 
   .photo-col {
     width: min(320px, 100%);
+    align-self: start;
+  }
+
+  .photo-caption {
+    position: static; /* back in flow so it doesn't overlap the bio text */
+    transform: none;
+    margin-top: 8px;
+    white-space: normal;
   }
 
   .photo {
