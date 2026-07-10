@@ -110,7 +110,7 @@ body {
   grid-row: 1;
   align-self: center; /* vertically center picture against .intro (same row) */
   position: relative;
-  transform: translateY(-20px); /* nudge up slightly from dead-center */
+  transform: translateY(-13.3px); /* nudge up slightly from dead-center */
 }
 
 /* lets .intro / .recent participate directly in the .layout grid */
