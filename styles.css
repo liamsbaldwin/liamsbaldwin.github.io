@@ -110,7 +110,7 @@ body {
   grid-row: 1;
   align-self: center; /* vertically center picture against .intro (same row) */
   position: relative;
-  transform: translateY(-13.3px); /* nudge up slightly from dead-center */
+  transform: translateY(-3.3px); /* nudge down a bit from previous position */
 }
 
 /* lets .intro / .recent participate directly in the .layout grid */
@@ -122,6 +122,8 @@ body {
 .intro {
   grid-column: 2;
   grid-row: 1;
+  max-width: 894px; /* narrower than the column so justified lines break
+                        on word boundaries instead of hyphenating */
 }
 
 .recent {
