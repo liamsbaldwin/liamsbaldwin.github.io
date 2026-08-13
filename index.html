@@ -180,6 +180,12 @@
           }
         });
         if (lastVisible) lastVisible.style.borderBottom = "none";
+
+        // Hide the whole "Recent" section if no entries remain visible
+        if (!lastVisible) {
+          const section = document.querySelector(".recent");
+          if (section) section.style.display = "none";
+        }
       })();
 
       // Expand/collapse descriptions
