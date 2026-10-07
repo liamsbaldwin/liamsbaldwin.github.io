@@ -834,11 +834,11 @@ html.dark .reading-group-notes .footnotes {
 .egg-b {
   cursor: pointer;
   background-image: var(--egg-sparkle), var(--egg-sand-light);
-  background-size: 128px 128px;
+  background-size: 256px 256px;
   -webkit-background-clip: text;
   background-clip: text;
-  transition: color 500ms ease;
-  animation: egg-grain 2s infinite;
+  transition: color 200ms ease;
+  animation: egg-grain 1.2s infinite;
   animation-timing-function: steps(1, end);
   animation-play-state: paused;
 }
@@ -856,14 +856,22 @@ html.egg-active body {
   overflow: hidden;
 }
 
-.egg-dust {
+/* Each piece of the page that gets pulled into the B moves on its own. */
+.egg-part { display: inline-block; }
+
+/* The B's sand, poured out to fill the screen. */
+.egg-flood {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1001;
+  inset: 0;
+  z-index: 999;
   pointer-events: none;
+  background-image: var(--egg-sparkle), var(--egg-sand-light);
+  background-size: 256px 256px;
+  animation: egg-grain 1.2s infinite;
+  animation-timing-function: steps(1, end);
+}
+html.dark .egg-flood {
+  background-image: var(--egg-sparkle), var(--egg-sand-dark);
 }
 
 /* The stage the planes live on: black in every theme. */
@@ -874,7 +882,7 @@ html.egg-active body {
   background: #000;
   color: rgba(255, 255, 255, 0.78);
   opacity: 0;
-  transition: opacity 900ms ease;
+  transition: opacity 450ms ease;
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -901,7 +909,7 @@ html.egg-active body {
   height: 100%;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 1800ms ease;
+  transition: opacity 900ms ease;
 }
 .egg-stage.lit .egg-vignette { opacity: 1; }
 .egg-stage.lit .egg-grain { opacity: 0.28; }
@@ -932,7 +940,7 @@ html.egg-active body {
   width: 44px;
   padding: 0;
   opacity: 0;
-  transition: opacity 600ms ease 1200ms;
+  transition: opacity 400ms ease 600ms;
 }
 .egg-stage.lit .egg-close { opacity: 1; }
 
@@ -960,7 +968,7 @@ html.egg-active body {
   opacity: 0;
   transition: opacity 500ms ease;
 }
-.egg-stage.lit .egg-hint { opacity: 1; transition-delay: 1800ms; }
+.egg-stage.lit .egg-hint { opacity: 1; transition-delay: 900ms; }
 .egg-stage.lit .egg-hint.gone { opacity: 0; transition-delay: 0s; }
 
 .egg-reset {
@@ -988,6 +996,7 @@ html.egg-active body {
 
 @media (prefers-reduced-motion: reduce) {
   .egg-b:hover,
-  .egg-b.egg-live { animation-play-state: paused; }
+  .egg-b.egg-live,
+  .egg-flood { animation-play-state: paused; }
   .egg-stage, .egg-layer, .egg-close, .egg-hint, .egg-reset { transition-duration: 0s; transition-delay: 0s; }
 }

@@ -1,5 +1,5 @@
 // Easter egg: hover the "B" in the heading and it turns to sand; click it and
-// the page crumbles away to reveal a stack of translucent planes you can turn.
+// the page is pulled into it and its sand floods out to reveal a stack of translucent planes you can turn.
 (function () {
   "use strict";
 
@@ -9,53 +9,52 @@
   var root = document.documentElement;
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   var THREE_SRC = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-  var SVG_NS = "http://www.w3.org/2000/svg";
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function easeOut(k) { return 1 - Math.pow(1 - k, 3); }
 
   // ── 1. Sand texture for the B ──────────────────────────────────────────────
 
-  var TILE = 128;
+  // The tile is TILE css pixels square but drawn at the screen's own pixel
+  // density, so every grain is a single device pixel: as fine as the screen allows.
+  var TILE = 256;
+  var DENSITY = clamp(Math.round(window.devicePixelRatio || 1), 1, 3);
+
+  function tile(paint) {
+    var size = TILE * DENSITY;
+    var c = document.createElement("canvas");
+    c.width = c.height = size;
+    var ctx = c.getContext("2d");
+    var img = ctx.createImageData(size, size);
+    var d = img.data;
+    for (var i = 0; i < d.length; i += 4) paint(d, i);
+    ctx.putImageData(img, 0, 0);
+    return "url(" + c.toDataURL() + ")";
+  }
 
   // Opaque salt-and-pepper grain. darkShare is the fraction of dark grains.
   function grainTile(darkShare) {
-    var c = document.createElement("canvas");
-    c.width = c.height = TILE;
-    var ctx = c.getContext("2d");
-    var img = ctx.createImageData(TILE, TILE);
-    var d = img.data;
-    for (var i = 0; i < d.length; i += 4) {
-      var v = Math.random() < darkShare ? Math.random() * 70 : 185 + Math.random() * 70;
+    return tile(function (d, i) {
+      var v = Math.random() < darkShare ? Math.random() * 60 : 195 + Math.random() * 60;
       d[i] = d[i + 1] = d[i + 2] = v;
       d[i + 3] = 255;
-    }
-    ctx.putImageData(img, 0, 0);
-    return c.toDataURL();
+    });
   }
 
-  // Mostly clear, with a scatter of bright and dark specks that jump around.
+  // Mostly clear, with a light scatter of specks that jump around.
   function sparkleTile() {
-    var c = document.createElement("canvas");
-    c.width = c.height = TILE;
-    var ctx = c.getContext("2d");
-    var img = ctx.createImageData(TILE, TILE);
-    var d = img.data;
-    for (var i = 0; i < d.length; i += 4) {
-      if (Math.random() < 0.07) {
-        var v = Math.random() < 0.5 ? 10 : 245;
-        d[i] = d[i + 1] = d[i + 2] = v;
+    return tile(function (d, i) {
+      if (Math.random() < 0.03) {
+        d[i] = d[i + 1] = d[i + 2] = Math.random() < 0.5 ? 10 : 245;
         d[i + 3] = 255;
       }
-    }
-    ctx.putImageData(img, 0, 0);
-    return c.toDataURL();
+    });
   }
 
   (function texture() {
-    root.style.setProperty("--egg-sand-light", "url(" + grainTile(0.8) + ")");
-    root.style.setProperty("--egg-sand-dark", "url(" + grainTile(0.22) + ")");
-    root.style.setProperty("--egg-sparkle", "url(" + sparkleTile() + ")");
+    root.style.setProperty("--egg-sand-light", grainTile(0.8));
+    root.style.setProperty("--egg-sand-dark", grainTile(0.22));
+    root.style.setProperty("--egg-sparkle", sparkleTile());
 
     // Stop-motion keyframes: the sand slides downward a few pixels a frame while
     // the specks jump to a new place every frame, so the letter seems to pour.
@@ -67,7 +66,7 @@
         pos = first;
       } else {
         var sx = Math.floor(Math.random() * TILE), sy = Math.floor(Math.random() * TILE);
-        var gx = Math.round(Math.random() * 2), gy = Math.round(i * TILE / frames);
+        var gx = Math.floor(Math.random() * TILE), gy = Math.round(i * TILE / frames);
         pos = sx + "px " + sy + "px, " + gx + "px " + gy + "px";
         if (i === 0) first = pos;
       }
@@ -97,214 +96,73 @@
   }
   b.addEventListener("pointerenter", function () { loadThree().catch(function () {}); });
 
-  // ── 2. Crumbling the page ──────────────────────────────────────────────────
-
-  var SLOPE = 8;            // sharpness of the dissolve edge
-  var filterSvg = null;
-
-  // One filter per block, so each can crumble on its own schedule. A coarse
-  // fractal noise decides which parts go first; a fine noise scatters the grains.
-  function makeFilter(id, seed) {
-    if (!filterSvg) {
-      filterSvg = document.createElementNS(SVG_NS, "svg");
-      filterSvg.setAttribute("aria-hidden", "true");
-      filterSvg.setAttribute("width", "0");
-      filterSvg.setAttribute("height", "0");
-      filterSvg.style.position = "absolute";
-      document.body.appendChild(filterSvg);
-    }
-    function el(name, attrs, parent) {
-      var n = document.createElementNS(SVG_NS, name);
-      for (var k in attrs) n.setAttribute(k, attrs[k]);
-      (parent || f).appendChild(n);
-      return n;
-    }
-    var f = el("filter", {
-      id: id, x: "-25%", y: "-25%", width: "150%", height: "150%",
-      "color-interpolation-filters": "sRGB"
-    }, filterSvg);
-    el("feTurbulence", { type: "fractalNoise", baseFrequency: "0.08", numOctaves: "4", seed: seed, result: "coarse" });
-    el("feTurbulence", { type: "fractalNoise", baseFrequency: "0.9", numOctaves: "1", seed: seed + 7, result: "fine" });
-    el("feColorMatrix", { in: "coarse", type: "matrix", values: "0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0", result: "grain" });
-    var ct = el("feComponentTransfer", { in: "grain", result: "mask" });
-    var funcA = el("feFuncA", { type: "linear", slope: String(SLOPE), intercept: "1" }, ct);
-    var disp = el("feDisplacementMap", { in: "SourceGraphic", in2: "fine", scale: "0", xChannelSelector: "R", yChannelSelector: "G", result: "moved" });
-    el("feComposite", { in: "moved", in2: "mask", operator: "in" });
-    return { funcA: funcA, disp: disp };
-  }
+  // ── 2. Pulling the page into the B ─────────────────────────────────────────
 
   function visible(el) { return el && el.getClientRects().length > 0; }
 
   function centre(r) { return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
 
-  function textRects(el) {
-    var range = document.createRange();
-    range.selectNodeContents(el);
-    var list = Array.prototype.filter.call(range.getClientRects(), function (r) {
-      return r.width > 1 && r.height > 1;
-    });
-    return list.length ? list : [el.getBoundingClientRect()];
-  }
+  var IN_EASE = "cubic-bezier(0.55, 0, 0.8, 0.2)";
+  var OUT_EASE = "cubic-bezier(0.2, 0.8, 0.45, 1)";
 
-  var items = null;
-  function buildItems() {
-    if (items) return items;
-    var els = [b, document.querySelector(".intro h1")];
+  // Everything except the B itself.
+  function blocks() {
+    var els = Array.prototype.slice.call(document.querySelectorAll(".egg-part"));
     document.querySelectorAll(".intro > p").forEach(function (p) { els.push(p); });
     els.push(document.querySelector(".photo-col"));
     els.push(document.querySelector(".recent"));
     els.push(document.querySelector(".theme-toggle"));
-    items = els.filter(visible).map(function (el, i) {
-      var id = "egg-dissolve-" + i;
-      return { el: el, id: id, f: makeFilter(id, 3 + i * 11) };
+    return els.filter(visible);
+  }
+
+  // Each block shrinks and slides into the B, nearest first.
+  function measure(items) {
+    var from = centre(b.getBoundingClientRect());
+    items.forEach(function (it) {
+      var c = centre(it.el.getBoundingClientRect());
+      it.dx = (from.x - c.x) * 0.9;
+      it.dy = (from.y - c.y) * 0.9;
+      it.delay = Math.min(Math.hypot(from.x - c.x, from.y - c.y) * 0.12, 160);
     });
     return items;
   }
 
-  // Measure where everything is right now: how far from the B, which way to blow.
-  function measure() {
-    var from = centre(b.getBoundingClientRect());
-    var area = 0;
-    items.forEach(function (it) {
-      var c = centre(it.el.getBoundingClientRect());
-      var dx = c.x - from.x, dy = c.y - from.y, dist = Math.hypot(dx, dy);
-      var wx = 0.8, wy = -0.6; // a breeze up and to the right
-      it.dir = dist > 1 ? { x: 0.55 * dx / dist + 0.45 * wx, y: 0.55 * dy / dist + 0.45 * wy } : { x: wx, y: wy };
-      it.delay = it.el === b ? 0 : 140 + Math.min(dist * 0.9, 950);
-      it.dur = it.el === b ? 900 : 1400;
-      it.rects = textRects(it.el);
-      it.area = it.rects.reduce(function (s, r) { return s + r.width * r.height; }, 0);
-      it.color = getComputedStyle(it.el).color;
-      it.grey = it.el.classList.contains("photo-col");
-      it.spawned = 0;
-      area += it.area;
-    });
-    var total = Math.min(3200, (window.innerWidth * window.innerHeight) / 300);
-    items.forEach(function (it) { it.budget = area ? total * it.area / area : 0; });
-  }
-
-  function paint(it, p) {
-    var s = it.el.style;
-    if (p <= 0) {
-      s.filter = s.translate = s.opacity = s.visibility = "";
-      return;
-    }
-    if (p >= 1) {
-      s.visibility = "hidden";
-      s.filter = "";
-      return;
-    }
-    s.visibility = "";
-    s.filter = "url(#" + it.id + ")";
-    var t = 0.05 + 0.95 * p;
-    it.f.funcA.setAttribute("intercept", (1 - SLOPE * t).toFixed(3));
-    it.f.disp.setAttribute("scale", (36 * p * p).toFixed(2));
-    var drift = 28 * p * p;
-    s.translate = (it.dir.x * drift).toFixed(2) + "px " + (it.dir.y * drift - 10 * p * p).toFixed(2) + "px";
-    s.opacity = p > 0.75 ? (1 - (p - 0.75) / 0.25).toFixed(3) : "";
-  }
-
-  // Dust: specks lifted off each block as it goes, carried off on the breeze.
-  var dust = null;
-  function dustStart() {
-    var c = document.createElement("canvas");
-    c.className = "egg-dust";
-    c.setAttribute("aria-hidden", "true");
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    c.width = Math.round(window.innerWidth * dpr);
-    c.height = Math.round(window.innerHeight * dpr);
-    document.body.appendChild(c);
-    var ctx = c.getContext("2d");
-    ctx.scale(dpr, dpr);
-    dust = { canvas: c, ctx: ctx, parts: [] };
-  }
-
-  function dustSpawn(it, p) {
-    var want = it.budget * clamp(p * 1.15, 0, 1);
-    var n = Math.floor(want - it.spawned);
-    if (n <= 0) return;
-    it.spawned += n;
-    for (var i = 0; i < n; i++) {
-      var pick = Math.random() * it.area, r = it.rects[0];
-      for (var j = 0; j < it.rects.length; j++) {
-        r = it.rects[j];
-        pick -= r.width * r.height;
-        if (pick <= 0) break;
-      }
-      var speed = 25 + Math.random() * 70;
-      var g = Math.round(40 + Math.random() * 170);
-      dust.parts.push({
-        x: r.left + Math.random() * r.width,
-        y: r.top + Math.random() * r.height,
-        vx: it.dir.x * speed + (Math.random() - 0.5) * 30,
-        vy: it.dir.y * speed + (Math.random() - 0.5) * 30 - 12,
-        life: 0,
-        max: 800 + Math.random() * 1200,
-        size: Math.random() < 0.7 ? 1 : 1.8,
-        alpha: 0.45 + Math.random() * 0.5,
-        color: it.grey ? "rgb(" + g + "," + g + "," + g + ")" : it.color
-      });
-    }
-  }
-
-  function dustStep(dt) {
-    var ctx = dust.ctx, s = dt / 1000;
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    var alive = [];
-    for (var i = 0; i < dust.parts.length; i++) {
-      var q = dust.parts[i];
-      q.life += dt;
-      if (q.life >= q.max) continue;
-      q.vx += (Math.random() - 0.5) * 140 * s;
-      q.vy += (Math.random() - 0.5) * 140 * s - 18 * s;
-      q.x += q.vx * s;
-      q.y += q.vy * s;
-      ctx.globalAlpha = q.alpha * (1 - q.life / q.max);
-      ctx.fillStyle = q.color;
-      ctx.fillRect(q.x, q.y, q.size, q.size);
-      alive.push(q);
-    }
-    dust.parts = alive;
-  }
-
-  function dustStop() {
-    if (!dust) return;
-    dust.canvas.remove();
-    dust = null;
-  }
-
-  // Run every block's crumble (forward) or reassembly (backward).
-  function runBlocks(forward, done) {
-    var start = performance.now(), last = start;
+  function pull(items, inward, dur) {
+    var still = reduceMotion.matches;
     var maxDelay = items.reduce(function (m, it) { return Math.max(m, it.delay); }, 0);
-    function tick(now) {
-      var t = now - start, dt = Math.min(now - last, 50), finished = true;
-      last = now;
-      items.forEach(function (it) {
-        var k;
-        if (forward) {
-          k = clamp((t - it.delay) / it.dur, 0, 1);
-          if (dust) dustSpawn(it, k);
-          paint(it, k);
-        } else {
-          // Come back in reverse order, a little quicker: farthest first, the B last.
-          k = clamp((t - (maxDelay - it.delay) * 0.5) / (it.dur * 0.65), 0, 1);
-          paint(it, 1 - easeOut(k));
-        }
-        if (k < 1) finished = false;
+    return Promise.all(items.map(function (it) {
+      var rest = { translate: "0px 0px", scale: "1", opacity: 1, filter: "blur(0px)" };
+      var gone = still
+        ? { translate: "0px 0px", scale: "1", opacity: 0, filter: "blur(0px)" }
+        : { translate: it.dx.toFixed(1) + "px " + it.dy.toFixed(1) + "px", scale: "0.1", opacity: 0, filter: "blur(6px)" };
+      var old = it.anim;
+      it.anim = it.el.animate(inward ? [rest, gone] : [gone, rest], {
+        duration: still ? 200 : dur,
+        // Out: nearest first. Back: farthest first, so the B is the last thing to let go.
+        delay: still ? 0 : (inward ? it.delay : maxDelay - it.delay),
+        easing: inward ? IN_EASE : OUT_EASE,
+        fill: "both"
       });
-      if (dust) dustStep(dt);
-      if (!finished || (dust && dust.parts.length)) {
-        requestAnimationFrame(tick);
-      } else {
-        done();
-      }
-    }
-    requestAnimationFrame(tick);
+      if (old) old.cancel();
+      return it.anim.finished.catch(function () {});
+    }));
   }
 
-  function totalForward() {
-    return items.reduce(function (m, it) { return Math.max(m, it.delay + it.dur); }, 0);
+  // The B's sand pours out of the letter until it fills the screen.
+  function makeFlood() {
+    var el = document.createElement("div");
+    el.className = "egg-flood";
+    el.setAttribute("aria-hidden", "true");
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function floodShapes() {
+    var r = b.getBoundingClientRect(), c = centre(r);
+    var W = window.innerWidth, H = window.innerHeight;
+    var far = Math.max(Math.hypot(c.x, c.y), Math.hypot(W - c.x, c.y), Math.hypot(c.x, H - c.y), Math.hypot(W - c.x, H - c.y));
+    var at = " at " + c.x.toFixed(1) + "px " + c.y.toFixed(1) + "px)";
+    return { small: "circle(0px" + at, big: "circle(" + Math.ceil(far + 2) + "px" + at };
   }
 
   // ── 3. The planes ──────────────────────────────────────────────────────────
@@ -518,7 +376,7 @@
         cube.quaternion.copy(home);
         resetAnim = null;
       } else {
-        resetAnim = { from: cube.quaternion.clone(), start: performance.now(), dur: 700 };
+        resetAnim = { from: cube.quaternion.clone(), start: performance.now(), dur: 500 };
       }
       if (document.activeElement === resetBtn) canvas.focus({ preventScroll: true });
       resetBtn.classList.remove("shown");
@@ -604,13 +462,13 @@
       if (intro) {
         var t = now - intro.start, settled = true;
         sheets.forEach(function (sh, i) {
-          var k = clamp((t - i * 90) / 1300, 0, 1);
+          var k = clamp((t - i * 50) / 800, 0, 1);
           if (k < 1) settled = false;
           sh.mesh.position.z = sh.z - (1 - easeOut(k)) * 1.1;
           sh.mat.uniforms.uOpacity.value = Math.min(1, k * 1.6);
         });
         if (intro.turning) {
-          var r = clamp(t / 2400, 0, 1);
+          var r = clamp(t / 1400, 0, 1);
           cube.quaternion.copy(intro.from).slerp(home, easeOut(r));
           if (r < 1) settled = false;
           else intro.turning = false;
@@ -646,9 +504,13 @@
 
   // ── 4. Putting it together ─────────────────────────────────────────────────
 
+  var items = null, flood = null;
+
   function onKey(e) {
     if (e.key === "Escape" && stage && !busy) close();
   }
+
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
   function open() {
     if (busy || stage) return;
@@ -656,63 +518,62 @@
     lastFocus = document.activeElement;
     root.classList.add("egg-active");
     b.classList.add("egg-live");
-    buildItems();
-    measure();
-
-    var three = loadThree().catch(function () {});
     var still = reduceMotion.matches;
-    if (!still) dustStart();
-    else items.forEach(function (it) { it.delay = 0; it.dur = 350; });
+    var three = loadThree().catch(function () {});
 
-    var crumbled = false, staged = false;
-    function finish() {
-      if (crumbled && staged) {
-        dustStop();
-        busy = false;
-      }
-    }
+    items = measure(blocks().map(function (el) { return { el: el }; }));
+    pull(items, true, 420);
 
-    runBlocks(true, function () { crumbled = true; finish(); });
+    var shapes = floodShapes();
+    flood = makeFlood();
+    var poured = still
+      ? flood.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, fill: "both" })
+      : flood.animate([{ clipPath: shapes.small }, { clipPath: shapes.big }], { duration: 480, delay: 260, easing: "cubic-bezier(0.7, 0, 0.84, 0)", fill: "both" });
 
-    // Bring the black stage up as the last of the page goes, then build the planes.
-    var reveal = still ? 300 : Math.max(totalForward() - 500, 600);
-    setTimeout(function () {
+    poured.finished.then(function () {
       stage = buildStage();
-      requestAnimationFrame(function () { stage.classList.add("on"); });
-      three.then(function () {
-        setTimeout(function () {
-          planes = makePlanes(stage);
-          stage.classList.add("lit");
-          (planes ? planes.canvas : stage.querySelector(".egg-close")).focus({ preventScroll: true });
-          document.addEventListener("keydown", onKey);
-          staged = true;
-          finish();
-        }, still ? 0 : 450);
+      return three;
+    }).then(function () {
+      planes = makePlanes(stage);
+      var shown = stage;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { shown.classList.add("on", "lit"); });
       });
-    }, reveal);
+      // Hidden under the stage now; no need to keep pouring.
+      setTimeout(function () { if (flood) flood.style.animationPlayState = "paused"; }, 500);
+      (planes ? planes.canvas : stage.querySelector(".egg-close")).focus({ preventScroll: true });
+      document.addEventListener("keydown", onKey);
+      busy = false;
+    });
   }
 
   function close() {
     if (busy || !stage) return;
     busy = true;
+    var still = reduceMotion.matches;
     document.removeEventListener("keydown", onKey);
     var leaving = stage, leavingPlanes = planes;
     stage = planes = null;
     leaving.classList.remove("on");
-    setTimeout(function () {
+    flood.style.animationPlayState = "";
+
+    var shapes = floodShapes();
+    wait(still ? 0 : 280).then(function () {
       if (leavingPlanes) leavingPlanes.destroy();
       leaving.remove();
-    }, 700);
-
-    setTimeout(function () {
-      runBlocks(false, function () {
-        items.forEach(function (it) { paint(it, 0); });
-        b.classList.remove("egg-live");
-        root.classList.remove("egg-active");
-        if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
-        busy = false;
-      });
-    }, reduceMotion.matches ? 0 : 250);
+      var drained = still
+        ? flood.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "both" })
+        : flood.animate([{ clipPath: shapes.big }, { clipPath: shapes.small }], { duration: 380, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "both" });
+      return Promise.all([drained.finished, wait(still ? 0 : 120).then(function () { return pull(items, false, 460); })]);
+    }).then(function () {
+      flood.remove();
+      flood = null;
+      items.forEach(function (it) { it.anim.cancel(); });
+      b.classList.remove("egg-live");
+      root.classList.remove("egg-active");
+      if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+      busy = false;
+    });
   }
 
   b.addEventListener("click", open);
