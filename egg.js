@@ -29,13 +29,15 @@
     var d = img.data;
     for (var i = 0; i < d.length; i += 4) paint(d, i);
     ctx.putImageData(img, 0, 0);
-    return "url(" + c.toDataURL() + ")";
+    return c;
   }
+
+  function cssUrl(canvas) { return "url(" + canvas.toDataURL() + ")"; }
 
   // Opaque salt-and-pepper grain. darkShare is the fraction of dark grains.
   function grainTile(darkShare) {
     return tile(function (d, i) {
-      var v = Math.random() < darkShare ? Math.random() * 60 : 195 + Math.random() * 60;
+      var v = Math.random() < darkShare ? Math.random() * 45 : 170 + Math.random() * 70;
       d[i] = d[i + 1] = d[i + 2] = v;
       d[i + 3] = 255;
     });
@@ -51,10 +53,15 @@
     });
   }
 
+  var tiles = {};
+
   (function texture() {
-    root.style.setProperty("--egg-sand-light", grainTile(0.8));
-    root.style.setProperty("--egg-sand-dark", grainTile(0.22));
-    root.style.setProperty("--egg-sparkle", sparkleTile());
+    tiles.sandLight = grainTile(0.9);
+    tiles.sandDark = grainTile(0.3);
+    tiles.sparkle = sparkleTile();
+    root.style.setProperty("--egg-sand-light", cssUrl(tiles.sandLight));
+    root.style.setProperty("--egg-sand-dark", cssUrl(tiles.sandDark));
+    root.style.setProperty("--egg-sparkle", cssUrl(tiles.sparkle));
 
     // Stop-motion keyframes: the sand slides downward a few pixels a frame while
     // the specks jump to a new place every frame, so the letter seems to pour.
@@ -148,21 +155,142 @@
     }));
   }
 
-  // The B's sand pours out of the letter until it fills the screen.
-  function makeFlood() {
-    var el = document.createElement("div");
-    el.className = "egg-flood";
-    el.setAttribute("aria-hidden", "true");
-    document.body.appendChild(el);
-    return el;
+  // The B's sand pours out of the letter until it fills the screen. Each spot on
+  // the screen gets an arrival time: mostly its distance from the B, roughened
+  // by layered noise and uneven rays, with a little per-grain jitter so the
+  // front breaks up into sand instead of drawing a clean line.
+  var CELL = 2; // css px per cell of the front; small enough to read as grains
+
+  function smooth(t) { return t * t * (3 - 2 * t); }
+
+  function valueNoise(w, h, size, out, weight) {
+    var gw = Math.ceil(w / size) + 2, gh = Math.ceil(h / size) + 2;
+    var grid = new Float32Array(gw * gh);
+    for (var g = 0; g < grid.length; g++) grid[g] = Math.random();
+    for (var y = 0; y < h; y++) {
+      var gy = y / size, y0 = Math.floor(gy), ty = smooth(gy - y0);
+      for (var x = 0; x < w; x++) {
+        var gx = x / size, x0 = Math.floor(gx), tx = smooth(gx - x0);
+        var i = y0 * gw + x0;
+        var top = grid[i] + (grid[i + 1] - grid[i]) * tx;
+        var bot = grid[i + gw] + (grid[i + gw + 1] - grid[i + gw]) * tx;
+        out[y * w + x] += weight * (top + (bot - top) * ty - 0.5);
+      }
+    }
   }
 
-  function floodShapes() {
-    var r = b.getBoundingClientRect(), c = centre(r);
+  function makeFlood() {
+    var dark = root.classList.contains("dark");
     var W = window.innerWidth, H = window.innerHeight;
-    var far = Math.max(Math.hypot(c.x, c.y), Math.hypot(W - c.x, c.y), Math.hypot(c.x, H - c.y), Math.hypot(W - c.x, H - c.y));
-    var at = " at " + c.x.toFixed(1) + "px " + c.y.toFixed(1) + "px)";
-    return { small: "circle(0px" + at, big: "circle(" + Math.ceil(far + 2) + "px" + at };
+    var canvas = document.createElement("canvas");
+    canvas.className = "egg-flood";
+    canvas.setAttribute("aria-hidden", "true");
+    canvas.width = Math.round(W * DENSITY);
+    canvas.height = Math.round(H * DENSITY);
+    document.body.appendChild(canvas);
+    var ctx = canvas.getContext("2d");
+
+    // Arrival times, one per cell.
+    var mw = Math.ceil(W / CELL), mh = Math.ceil(H / CELL);
+    var c = centre(b.getBoundingClientRect());
+    var cx = c.x / CELL, cy = c.y / CELL;
+    var far = Math.max(Math.hypot(cx, cy), Math.hypot(mw - cx, cy), Math.hypot(cx, mh - cy), Math.hypot(mw - cx, mh - cy));
+    var lumps = new Float32Array(mw * mh);
+    [[48, 0.5], [24, 0.25], [12, 0.14], [6, 0.08], [3, 0.05]].forEach(function (o) {
+      valueNoise(mw, mh, o[0], lumps, o[1]);
+    });
+    var RAYS = 22, rays = [];
+    for (var r = 0; r < RAYS; r++) rays.push(Math.random() - 0.5);
+    var field = new Float32Array(mw * mh), lo = Infinity, hi = -Infinity;
+    for (var y = 0; y < mh; y++) {
+      for (var x = 0; x < mw; x++) {
+        var dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy) / far;
+        var a = (Math.atan2(dy, dx) / (2 * Math.PI) + 0.5) * RAYS;
+        var a0 = Math.floor(a) % RAYS, ta = smooth(a - Math.floor(a));
+        var ray = rays[a0] + (rays[(a0 + 1) % RAYS] - rays[a0]) * ta;
+        var i = y * mw + x;
+        var v = d + 0.3 * lumps[i] + 0.16 * ray * Math.min(1, d * 5) + 0.06 * (Math.random() - 0.5);
+        field[i] = v;
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+      }
+    }
+
+    var mask = document.createElement("canvas");
+    mask.width = mw;
+    mask.height = mh;
+    var mctx = mask.getContext("2d");
+    var img = mctx.createImageData(mw, mh);
+    for (var p = 0; p < img.data.length; p += 4) img.data[p] = img.data[p + 1] = img.data[p + 2] = 255;
+
+    var sand = ctx.createPattern(dark ? tiles.sandDark : tiles.sandLight, "repeat");
+    var sparkle = ctx.createPattern(tiles.sparkle, "repeat");
+    var size = TILE * DENSITY, step = -1, fall = 0;
+
+    function pour(level) {
+      var data = img.data, n = field.length;
+      for (var i = 0, j = 3; i < n; i++, j += 4) data[j] = field[i] < level ? 255 : 0;
+      mctx.putImageData(img, 0, 0);
+    }
+
+    // Draw the sand, moving it on in stop-motion steps, then cut it to the front.
+    function draw(now, level) {
+      var s = Math.floor(now / 50);
+      if (s !== step) { step = s; fall = (fall + size / 24) % size; }
+      ctx.globalCompositeOperation = "source-over";
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(Math.floor(Math.random() * 3) - 1, fall - size);
+      ctx.fillStyle = sand;
+      ctx.fillRect(0, 0, canvas.width, canvas.height + size);
+      ctx.restore();
+      ctx.save();
+      ctx.translate(-Math.random() * size, -Math.random() * size);
+      ctx.fillStyle = sparkle;
+      ctx.fillRect(0, 0, canvas.width + size, canvas.height + size);
+      ctx.restore();
+      if (level < hi) {
+        pour(level);
+        ctx.globalCompositeOperation = "destination-in";
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(mask, 0, 0, mw * CELL * DENSITY, mh * CELL * DENSITY);
+      }
+    }
+
+    var raf = 0;
+    function stop() { cancelAnimationFrame(raf); }
+
+    // Spread out (or draw back in) over dur ms; resolves once the front is done.
+    function run(outward, dur, ease) {
+      stop();
+      return new Promise(function (resolve) {
+        var start = performance.now();
+        function frame(now) {
+          var k = clamp((now - start) / dur, 0, 1), e = ease(k);
+          draw(now, lo + (hi - lo + 0.001) * (outward ? e : 1 - e));
+          if (k < 1) raf = requestAnimationFrame(frame);
+          else resolve();
+        }
+        raf = requestAnimationFrame(frame);
+      });
+    }
+
+    // Keep the sand moving at full cover for a while, e.g. as the stage fades in.
+    function churn(ms) {
+      stop();
+      var end = performance.now() + ms;
+      function frame(now) {
+        draw(now, hi + 1);
+        if (now < end) raf = requestAnimationFrame(frame);
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    return {
+      run: run,
+      churn: churn,
+      remove: function () { stop(); canvas.remove(); }
+    };
   }
 
   // ── 3. The planes ──────────────────────────────────────────────────────────
@@ -524,13 +652,13 @@
     items = measure(blocks().map(function (el) { return { el: el }; }));
     pull(items, true, 420);
 
-    var shapes = floodShapes();
     flood = makeFlood();
     var poured = still
-      ? flood.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, fill: "both" })
-      : flood.animate([{ clipPath: shapes.small }, { clipPath: shapes.big }], { duration: 480, delay: 260, easing: "cubic-bezier(0.7, 0, 0.84, 0)", fill: "both" });
+      ? flood.run(true, 1, function (k) { return k; })
+      : wait(220).then(function () { return flood.run(true, 520, function (k) { return k * k * k * 0.6 + k * 0.4; }); });
 
-    poured.finished.then(function () {
+    poured.then(function () {
+      flood.churn(still ? 0 : 700);
       stage = buildStage();
       return three;
     }).then(function () {
@@ -539,8 +667,6 @@
       requestAnimationFrame(function () {
         requestAnimationFrame(function () { shown.classList.add("on", "lit"); });
       });
-      // Hidden under the stage now; no need to keep pouring.
-      setTimeout(function () { if (flood) flood.style.animationPlayState = "paused"; }, 500);
       (planes ? planes.canvas : stage.querySelector(".egg-close")).focus({ preventScroll: true });
       document.addEventListener("keydown", onKey);
       busy = false;
@@ -555,16 +681,13 @@
     var leaving = stage, leavingPlanes = planes;
     stage = planes = null;
     leaving.classList.remove("on");
-    flood.style.animationPlayState = "";
+    if (!still) flood.churn(400);
 
-    var shapes = floodShapes();
     wait(still ? 0 : 280).then(function () {
       if (leavingPlanes) leavingPlanes.destroy();
       leaving.remove();
-      var drained = still
-        ? flood.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "both" })
-        : flood.animate([{ clipPath: shapes.big }, { clipPath: shapes.small }], { duration: 380, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "both" });
-      return Promise.all([drained.finished, wait(still ? 0 : 120).then(function () { return pull(items, false, 460); })]);
+      var drained = flood.run(false, still ? 1 : 420, easeOut);
+      return Promise.all([drained, wait(still ? 0 : 120).then(function () { return pull(items, false, 460); })]);
     }).then(function () {
       flood.remove();
       flood = null;
