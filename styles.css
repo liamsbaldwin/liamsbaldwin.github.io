@@ -833,7 +833,7 @@ html.dark .reading-group-notes .footnotes {
 /* ── Easter egg: the B in the heading ── */
 .egg-b {
   cursor: pointer;
-  background-image: var(--egg-sparkle), var(--egg-sand-light);
+  background-image: var(--egg-grain);
   background-size: 256px 256px;
   -webkit-background-clip: text;
   background-clip: text;
@@ -843,7 +843,7 @@ html.dark .reading-group-notes .footnotes {
   animation-play-state: paused;
 }
 html.dark .egg-b {
-  background-image: var(--egg-sparkle), var(--egg-sand-dark);
+  background-image: var(--egg-grain-lit);
 }
 .egg-b:hover,
 .egg-b.egg-live {
@@ -859,7 +859,7 @@ html.egg-active body {
 /* Each piece of the page that gets pulled into the B moves on its own. */
 .egg-part { display: inline-block; }
 
-/* The B's sand, poured out to fill the screen (drawn by egg.js). */
+/* The B, zoomed until it fills the screen (drawn by egg.js). */
 .egg-flood {
   position: fixed;
   top: 0;

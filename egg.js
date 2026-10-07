@@ -1,5 +1,5 @@
-// Easter egg: hover the "B" in the heading and it turns to sand; click it and
-// the page is pulled into it and its sand floods out to reveal a stack of translucent planes you can turn.
+// Easter egg: hover the "B" in the heading and it turns to grain; click it and
+// the page is pulled into it and you fly through the letter to reveal a stack of translucent planes you can turn.
 (function () {
   "use strict";
 
@@ -13,12 +13,14 @@
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function easeOut(k) { return 1 - Math.pow(1 - k, 3); }
 
-  // ── 1. Sand texture for the B ──────────────────────────────────────────────
+  // ── 1. Grain texture for the B ─────────────────────────────────────────────
 
-  // The tile is TILE css pixels square but drawn at the screen's own pixel
-  // density, so every grain is a single device pixel: as fine as the screen allows.
+  // The same fine grey grain the planes sit on, so the letter and the stage read
+  // as one material. The tile is TILE css pixels square, drawn at the screen's
+  // own pixel density so every grain is a single device pixel.
   var TILE = 256;
   var DENSITY = clamp(Math.round(window.devicePixelRatio || 1), 1, 3);
+  var STAGE_GREY = 26, STAGE_GRAIN = 7;   // measured off the stage background
 
   function tile(paint) {
     var size = TILE * DENSITY;
@@ -34,49 +36,31 @@
 
   function cssUrl(canvas) { return "url(" + canvas.toDataURL() + ")"; }
 
-  // Opaque salt-and-pepper grain. darkShare is the fraction of dark grains.
-  function grainTile(darkShare) {
+  // Roughly normal noise around a grey level.
+  function grainTile(mean, spread) {
     return tile(function (d, i) {
-      var v = Math.random() < darkShare ? Math.random() * 45 : 170 + Math.random() * 70;
+      var n = (Math.random() + Math.random() + Math.random() - 1.5) * 2; // ~N(0, 1)
+      var v = clamp(mean + n * spread, 0, 255);
       d[i] = d[i + 1] = d[i + 2] = v;
       d[i + 3] = 255;
-    });
-  }
-
-  // Mostly clear, with a light scatter of specks that jump around.
-  function sparkleTile() {
-    return tile(function (d, i) {
-      if (Math.random() < 0.03) {
-        d[i] = d[i + 1] = d[i + 2] = Math.random() < 0.5 ? 10 : 245;
-        d[i + 3] = 255;
-      }
     });
   }
 
   var tiles = {};
 
   (function texture() {
-    tiles.sandLight = grainTile(0.9);
-    tiles.sandDark = grainTile(0.3);
-    tiles.sparkle = sparkleTile();
-    root.style.setProperty("--egg-sand-light", cssUrl(tiles.sandLight));
-    root.style.setProperty("--egg-sand-dark", cssUrl(tiles.sandDark));
-    root.style.setProperty("--egg-sparkle", cssUrl(tiles.sparkle));
+    tiles.stage = grainTile(STAGE_GREY, STAGE_GRAIN);
+    // On the dark page the stage grey would disappear, so the B is lit up there.
+    tiles.lit = grainTile(165, 38);
+    root.style.setProperty("--egg-grain", cssUrl(tiles.stage));
+    root.style.setProperty("--egg-grain-lit", cssUrl(tiles.lit));
 
-    // Stop-motion keyframes: the sand slides downward a few pixels a frame while
-    // the specks jump to a new place every frame, so the letter seems to pour.
+    // Stop-motion keyframes: the grain jumps to a new place every frame, so it boils.
     var frames = 24, css = "@keyframes egg-grain {";
     var first = null;
     for (var i = 0; i <= frames; i++) {
-      var pos;
-      if (i === frames) {
-        pos = first;
-      } else {
-        var sx = Math.floor(Math.random() * TILE), sy = Math.floor(Math.random() * TILE);
-        var gx = Math.floor(Math.random() * TILE), gy = Math.round(i * TILE / frames);
-        pos = sx + "px " + sy + "px, " + gx + "px " + gy + "px";
-        if (i === 0) first = pos;
-      }
+      var pos = i === frames ? first : Math.floor(Math.random() * TILE) + "px " + Math.floor(Math.random() * TILE) + "px";
+      if (i === 0) first = pos;
       css += (i / frames * 100).toFixed(3) + "% { background-position: " + pos + "; }";
     }
     css += "}";
@@ -155,28 +139,38 @@
     }));
   }
 
-  // The B's sand pours out of the letter until it fills the screen. Each spot on
-  // the screen gets an arrival time: mostly its distance from the B, roughened
-  // by layered noise and uneven rays, with a little per-grain jitter so the
-  // front breaks up into sand instead of drawing a clean line.
-  var CELL = 2; // css px per cell of the front; small enough to read as grains
-
-  function smooth(t) { return t * t * (3 - 2 * t); }
-
-  function valueNoise(w, h, size, out, weight) {
-    var gw = Math.ceil(w / size) + 2, gh = Math.ceil(h / size) + 2;
-    var grid = new Float32Array(gw * gh);
-    for (var g = 0; g < grid.length; g++) grid[g] = Math.random();
-    for (var y = 0; y < h; y++) {
-      var gy = y / size, y0 = Math.floor(gy), ty = smooth(gy - y0);
-      for (var x = 0; x < w; x++) {
-        var gx = x / size, x0 = Math.floor(gx), tx = smooth(gx - x0);
-        var i = y0 * gw + x0;
-        var top = grid[i] + (grid[i + 1] - grid[i]) * tx;
-        var bot = grid[i + gw] + (grid[i + gw + 1] - grid[i + gw]) * tx;
-        out[y * w + x] += weight * (top + (bot - top) * ty - 0.5);
-      }
+  // The B swells until you fly through it: it scales up around a point deep
+  // inside its stem until that stroke fills the screen with the stage's grain.
+  function interiorPoint(font, r, ascent) {
+    var SS = 4, pad = 2;
+    var c = document.createElement("canvas");
+    var w = (Math.ceil(r.width) + pad * 2) * SS, h = (Math.ceil(r.height) + pad * 2) * SS;
+    c.width = w;
+    c.height = h;
+    var ctx = c.getContext("2d");
+    ctx.scale(SS, SS);
+    ctx.font = font;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("B", pad, pad + ascent);
+    var data = ctx.getImageData(0, 0, w, h).data;
+    function on(x, y) { return data[(y * w + x) * 4 + 3] > 128; }
+    // How far each inked pixel is from the edge of the stroke, horizontally and vertically.
+    var left = new Int32Array(w * h), right = new Int32Array(w * h), up = new Int32Array(w * h), down = new Int32Array(w * h);
+    var x, y, i;
+    for (y = 0; y < h; y++) {
+      for (x = 0; x < w; x++) { i = y * w + x; left[i] = on(x, y) ? (x ? left[i - 1] : 0) + 1 : 0; }
+      for (x = w - 1; x >= 0; x--) { i = y * w + x; right[i] = on(x, y) ? (x < w - 1 ? right[i + 1] : 0) + 1 : 0; }
     }
+    for (x = 0; x < w; x++) {
+      for (y = 0; y < h; y++) { i = y * w + x; up[i] = on(x, y) ? (y ? up[i - w] : 0) + 1 : 0; }
+      for (y = h - 1; y >= 0; y--) { i = y * w + x; down[i] = on(x, y) ? (y < h - 1 ? down[i + w] : 0) + 1 : 0; }
+    }
+    var best = 0, bx = w / 2, by = h / 2;
+    for (i = 0; i < w * h; i++) {
+      var d = Math.min(left[i], right[i], up[i], down[i]);
+      if (d > best) { best = d; bx = i % w; by = (i / w) | 0; }
+    }
+    return { x: r.left - pad + bx / SS, y: r.top - pad + by / SS, d: Math.max(best / SS, 0.5) };
   }
 
   function makeFlood() {
@@ -190,84 +184,61 @@
     document.body.appendChild(canvas);
     var ctx = canvas.getContext("2d");
 
-    // Arrival times, one per cell.
-    var mw = Math.ceil(W / CELL), mh = Math.ceil(H / CELL);
-    var c = centre(b.getBoundingClientRect());
-    var cx = c.x / CELL, cy = c.y / CELL;
-    var far = Math.max(Math.hypot(cx, cy), Math.hypot(mw - cx, cy), Math.hypot(cx, mh - cy), Math.hypot(mw - cx, mh - cy));
-    var lumps = new Float32Array(mw * mh);
-    [[48, 0.5], [24, 0.25], [12, 0.14], [6, 0.08], [3, 0.05]].forEach(function (o) {
-      valueNoise(mw, mh, o[0], lumps, o[1]);
-    });
-    var RAYS = 22, rays = [];
-    for (var r = 0; r < RAYS; r++) rays.push(Math.random() - 0.5);
-    var field = new Float32Array(mw * mh), lo = Infinity, hi = -Infinity;
-    for (var y = 0; y < mh; y++) {
-      for (var x = 0; x < mw; x++) {
-        var dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy) / far;
-        var a = (Math.atan2(dy, dx) / (2 * Math.PI) + 0.5) * RAYS;
-        var a0 = Math.floor(a) % RAYS, ta = smooth(a - Math.floor(a));
-        var ray = rays[a0] + (rays[(a0 + 1) % RAYS] - rays[a0]) * ta;
-        var i = y * mw + x;
-        var v = d + 0.3 * lumps[i] + 0.16 * ray * Math.min(1, d * 5) + 0.06 * (Math.random() - 0.5);
-        field[i] = v;
-        if (v < lo) lo = v;
-        if (v > hi) hi = v;
-      }
-    }
+    // Match the B on the page exactly, so the first frame sits right on top of it.
+    var cs = getComputedStyle(b);
+    var font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+    var r = b.getBoundingClientRect();
+    ctx.font = font;
+    var m = ctx.measureText("B");
+    var ascent = m.fontBoundingBoxAscent || r.height * 0.78;
+    var baseline = r.top + ascent;
+    var A = interiorPoint(font, r, ascent);
+    var reach = Math.max(A.x, W - A.x, A.y, H - A.y);
+    var full = reach / A.d * 1.04;          // scale at which the stem covers the screen
+    var LOG_FULL = Math.log(full);
 
-    var mask = document.createElement("canvas");
-    mask.width = mw;
-    mask.height = mh;
-    var mctx = mask.getContext("2d");
-    var img = mctx.createImageData(mw, mh);
-    for (var p = 0; p < img.data.length; p += 4) img.data[p] = img.data[p + 1] = img.data[p + 2] = 255;
+    var stagePat = ctx.createPattern(tiles.stage, "repeat");
+    var litPat = ctx.createPattern(tiles.lit, "repeat");
+    var size = TILE * DENSITY, step = -1, ox = 0, oy = 0;
 
-    var sand = ctx.createPattern(dark ? tiles.sandDark : tiles.sandLight, "repeat");
-    var sparkle = ctx.createPattern(tiles.sparkle, "repeat");
-    var size = TILE * DENSITY, step = -1, fall = 0;
-
-    function pour(level) {
-      var data = img.data, n = field.length;
-      for (var i = 0, j = 3; i < n; i++, j += 4) data[j] = field[i] < level ? 255 : 0;
-      mctx.putImageData(img, 0, 0);
-    }
-
-    // Draw the sand, moving it on in stop-motion steps, then cut it to the front.
-    function draw(now, level) {
-      var s = Math.floor(now / 50);
-      if (s !== step) { step = s; fall = (fall + size / 24) % size; }
+    function draw(now, k) {
+      var s = Math.exp(LOG_FULL * k);
+      var st = Math.floor(now / 50);
+      if (st !== step) { step = st; ox = Math.random() * size; oy = Math.random() * size; }
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.save();
-      ctx.translate(Math.floor(Math.random() * 3) - 1, fall - size);
-      ctx.fillStyle = sand;
-      ctx.fillRect(0, 0, canvas.width, canvas.height + size);
-      ctx.restore();
-      ctx.save();
-      ctx.translate(-Math.random() * size, -Math.random() * size);
-      ctx.fillStyle = sparkle;
+      ctx.translate(-ox, -oy);
+      ctx.fillStyle = stagePat;
       ctx.fillRect(0, 0, canvas.width + size, canvas.height + size);
-      ctx.restore();
-      if (level < hi) {
-        pour(level);
-        ctx.globalCompositeOperation = "destination-in";
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(mask, 0, 0, mw * CELL * DENSITY, mh * CELL * DENSITY);
+      // On the dark page the B starts lit and settles into the stage grey as it grows.
+      if (dark && k < 0.6) {
+        ctx.globalAlpha = 1 - k / 0.6;
+        ctx.fillStyle = litPat;
+        ctx.fillRect(0, 0, canvas.width + size, canvas.height + size);
+        ctx.globalAlpha = 1;
       }
+      if (k >= 1) return;
+      ctx.globalCompositeOperation = "destination-in";
+      ctx.setTransform(DENSITY * s, 0, 0, DENSITY * s, DENSITY * A.x * (1 - s), DENSITY * A.y * (1 - s));
+      ctx.font = font;
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#000";
+      ctx.fillText("B", r.left, baseline);
     }
 
     var raf = 0;
     function stop() { cancelAnimationFrame(raf); }
 
-    // Spread out (or draw back in) over dur ms; resolves once the front is done.
+    // Zoom in (or back out) over dur ms; resolves when it lands.
     function run(outward, dur, ease) {
       stop();
       return new Promise(function (resolve) {
         var start = performance.now();
         function frame(now) {
           var k = clamp((now - start) / dur, 0, 1), e = ease(k);
-          draw(now, lo + (hi - lo + 0.001) * (outward ? e : 1 - e));
+          draw(now, outward ? e : 1 - e);
           if (k < 1) raf = requestAnimationFrame(frame);
           else resolve();
         }
@@ -275,17 +246,18 @@
       });
     }
 
-    // Keep the sand moving at full cover for a while, e.g. as the stage fades in.
+    // Keep the grain moving at full cover for a while, e.g. as the stage fades in.
     function churn(ms) {
       stop();
       var end = performance.now() + ms;
       function frame(now) {
-        draw(now, hi + 1);
+        draw(now, 1);
         if (now < end) raf = requestAnimationFrame(frame);
       }
       raf = requestAnimationFrame(frame);
     }
 
+    draw(performance.now(), 0);
     return {
       run: run,
       churn: churn,
@@ -653,9 +625,10 @@
     pull(items, true, 420);
 
     flood = makeFlood();
+    b.style.visibility = "hidden"; // the canvas copy sits exactly on top and takes over
     var poured = still
       ? flood.run(true, 1, function (k) { return k; })
-      : wait(220).then(function () { return flood.run(true, 520, function (k) { return k * k * k * 0.6 + k * 0.4; }); });
+      : wait(240).then(function () { return flood.run(true, 820, function (k) { return k * k * (3 - 2 * k); }); });
 
     poured.then(function () {
       flood.churn(still ? 0 : 700);
@@ -686,11 +659,12 @@
     wait(still ? 0 : 280).then(function () {
       if (leavingPlanes) leavingPlanes.destroy();
       leaving.remove();
-      var drained = flood.run(false, still ? 1 : 420, easeOut);
+      var drained = flood.run(false, still ? 1 : 620, function (k) { return k * k * (3 - 2 * k); });
       return Promise.all([drained, wait(still ? 0 : 120).then(function () { return pull(items, false, 460); })]);
     }).then(function () {
       flood.remove();
       flood = null;
+      b.style.visibility = "";
       items.forEach(function (it) { it.anim.cancel(); });
       b.classList.remove("egg-live");
       root.classList.remove("egg-active");
