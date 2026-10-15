@@ -833,18 +833,19 @@ html.dark .reading-group-notes .footnotes {
 /* ── Easter egg: the B in the heading ── */
 .egg-b {
   cursor: pointer;
-  background-image: var(--egg-grain);
+  background-image: var(--egg-shimmer), var(--egg-grain);
   background-size: 256px 256px;
   -webkit-background-clip: text;
   background-clip: text;
   transition: color 200ms ease;
-  animation: egg-grain 1.2s infinite;
+  animation: egg-grain 3.6s infinite;
   animation-timing-function: steps(1, end);
   animation-play-state: paused;
 }
 html.dark .egg-b {
-  background-image: var(--egg-grain-lit);
+  background-image: var(--egg-shimmer), var(--egg-grain-lit);
 }
+
 .egg-b:hover,
 .egg-b.egg-live {
   color: transparent;

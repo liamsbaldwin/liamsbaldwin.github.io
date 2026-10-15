@@ -46,20 +46,62 @@
     });
   }
 
+  // Soft light and dark patches that drift through the letter on hover. The
+  // noise lattice wraps around, so the tile repeats without a seam.
+  function shimmerTile() {
+    var size = 128, c = document.createElement("canvas");
+    c.width = c.height = size;
+    var ctx = c.getContext("2d");
+    var img = ctx.createImageData(size, size);
+    var d = img.data;
+    function lattice(n) {
+      var g = [];
+      for (var i = 0; i < n * n; i++) g.push(Math.random());
+      return function (x, y) {
+        var gx = x / size * n, gy = y / size * n;
+        var x0 = Math.floor(gx), y0 = Math.floor(gy);
+        var tx = gx - x0, ty = gy - y0;
+        tx = tx * tx * (3 - 2 * tx);
+        ty = ty * ty * (3 - 2 * ty);
+        function at(i, j) { return g[((j % n) * n) + (i % n)]; }
+        var top = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * tx;
+        var bot = at(x0, y0 + 1) + (at(x0 + 1, y0 + 1) - at(x0, y0 + 1)) * tx;
+        return top + (bot - top) * ty;
+      };
+    }
+    var big = lattice(4), small = lattice(8);
+    for (var y = 0; y < size; y++) {
+      for (var x = 0; x < size; x++) {
+        var v = (big(x, y) * 0.65 + small(x, y) * 0.35) - 0.5;
+        var i = (y * size + x) * 4;
+        d[i] = d[i + 1] = d[i + 2] = v > 0 ? 255 : 0;
+        d[i + 3] = Math.min(255, Math.abs(v) * 2 * 140);
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return c;
+  }
+
   var tiles = {};
 
   (function texture() {
     tiles.stage = grainTile(STAGE_GREY, STAGE_GRAIN);
-    // On the dark page the stage grey would disappear, so the B is lit up there.
-    tiles.lit = grainTile(165, 38);
-    root.style.setProperty("--egg-grain", cssUrl(tiles.stage));
+    // While hovered the B is a lighter, grainier version of that grey so the
+    // texture shows; on the dark page it is lit up further so it stays visible.
+    // Once clicked it settles into the stage grey as it grows.
+    tiles.hover = grainTile(88, 34);
+    tiles.lit = grainTile(165, 44);
+    root.style.setProperty("--egg-grain", cssUrl(tiles.hover));
     root.style.setProperty("--egg-grain-lit", cssUrl(tiles.lit));
+    root.style.setProperty("--egg-shimmer", cssUrl(shimmerTile()));
 
-    // Stop-motion keyframes: the grain jumps to a new place every frame, so it boils.
-    var frames = 24, css = "@keyframes egg-grain {";
+    // Stop-motion keyframes, about 20 a second: the grain jumps to a new place
+    // every frame so it boils, while the soft patches drift steadily across.
+    var frames = 72, css = "@keyframes egg-grain {";
     var first = null;
     for (var i = 0; i <= frames; i++) {
-      var pos = i === frames ? first : Math.floor(Math.random() * TILE) + "px " + Math.floor(Math.random() * TILE) + "px";
+      var drift = Math.round(i * TILE / frames) + "px";
+      var pos = i === frames ? first : drift + " " + drift + ", " + Math.floor(Math.random() * TILE) + "px " + Math.floor(Math.random() * TILE) + "px";
       if (i === 0) first = pos;
       css += (i / frames * 100).toFixed(3) + "% { background-position: " + pos + "; }";
     }
@@ -198,7 +240,7 @@
     var LOG_FULL = Math.log(full);
 
     var stagePat = ctx.createPattern(tiles.stage, "repeat");
-    var litPat = ctx.createPattern(tiles.lit, "repeat");
+    var litPat = ctx.createPattern(dark ? tiles.lit : tiles.hover, "repeat");
     var size = TILE * DENSITY, step = -1, ox = 0, oy = 0;
 
     function draw(now, k) {
@@ -212,8 +254,8 @@
       ctx.translate(-ox, -oy);
       ctx.fillStyle = stagePat;
       ctx.fillRect(0, 0, canvas.width + size, canvas.height + size);
-      // On the dark page the B starts lit and settles into the stage grey as it grows.
-      if (dark && k < 0.6) {
+      // The B starts in its lighter hover grain and settles into the stage grey as it grows.
+      if (k < 0.6) {
         ctx.globalAlpha = 1 - k / 0.6;
         ctx.fillStyle = litPat;
         ctx.fillRect(0, 0, canvas.width + size, canvas.height + size);
