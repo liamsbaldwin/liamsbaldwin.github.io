@@ -181,9 +181,9 @@
     }));
   }
 
-  // The B swells until you fly through it: it scales up around a point deep
-  // inside its stem until that stroke fills the screen with the stage's grain.
-  function interiorPoint(font, r, ascent) {
+  // The B swells until you fly through it: it scales up around a point inside
+  // one of its strokes until that stroke fills the screen with the stage's grain.
+  function interiorPoint(font, r, ascent, W, H) {
     var SS = 4, pad = 2;
     var c = document.createElement("canvas");
     var w = (Math.ceil(r.width) + pad * 2) * SS, h = (Math.ceil(r.height) + pad * 2) * SS;
@@ -207,13 +207,29 @@
       for (y = 0; y < h; y++) { i = y * w + x; up[i] = on(x, y) ? (y ? up[i - w] : 0) + 1 : 0; }
       for (y = h - 1; y >= 0; y--) { i = y * w + x; down[i] = on(x, y) ? (y < h - 1 ? down[i + w] : 0) + 1 : 0; }
     }
-    var best = 0, bx = w / 2, by = h / 2;
+    // Pick the point that needs the least zoom before the stroke reaches past
+    // every edge of the screen, so all the edges clear at about the same moment.
+    var best = Infinity, bx = w / 2, by = h / 2;
     for (i = 0; i < w * h; i++) {
-      var d = Math.min(left[i], right[i], up[i], down[i]);
-      if (d > best) { best = d; bx = i % w; by = (i / w) | 0; }
+      if (!left[i]) continue;
+      var px = r.left - pad + (i % w) / SS, py = r.top - pad + ((i / w) | 0) / SS;
+      var need = Math.max(px / left[i], (W - px) / right[i], py / up[i], (H - py) / down[i]) * SS;
+      if (need < best) { best = need; bx = i % w; by = (i / w) | 0; }
     }
-    return { x: r.left - pad + bx / SS, y: r.top - pad + by / SS, d: Math.max(best / SS, 0.5) };
+    return {
+      x: r.left - pad + bx / SS,
+      y: r.top - pad + by / SS,
+      need: best,
+      // Is this page point (css px) inside the letter as it sits on the page?
+      inked: function (px, py) {
+        var x = Math.round((px - r.left + pad) * SS), y = Math.round((py - r.top + pad) * SS);
+        return x >= 0 && y >= 0 && x < w && y < h && on(x, y);
+      }
+    };
   }
+
+  // Eases in and out without ever stalling, so the end of the zoom keeps moving.
+  function zoomEase(k) { return k - 0.45 * Math.sin(2 * Math.PI * k) / (2 * Math.PI); }
 
   function makeFlood() {
     var dark = root.classList.contains("dark");
@@ -234,9 +250,27 @@
     var m = ctx.measureText("B");
     var ascent = m.fontBoundingBoxAscent || r.height * 0.78;
     var baseline = r.top + ascent;
-    var A = interiorPoint(font, r, ascent);
-    var reach = Math.max(A.x, W - A.x, A.y, H - A.y);
-    var full = reach / A.d * 1.04;          // scale at which the stem covers the screen
+    var A = interiorPoint(font, r, ascent, W, H);
+    // Find the scale at which the letter really covers the whole screen, by
+    // checking points all round the screen's edge against the glyph, then fly a
+    // little past it so the zoom never ends on a sliver of page.
+    function covers(scale) {
+      var N = 64;
+      for (var i = 0; i <= N; i++) {
+        var t = i / N, pts = [[t * W, 0], [t * W, H], [0, t * H], [W, t * H]];
+        for (var j = 0; j < 4; j++) {
+          if (!A.inked(A.x + (pts[j][0] - A.x) / scale, A.y + (pts[j][1] - A.y) / scale)) return false;
+        }
+      }
+      return true;
+    }
+    var lo = 1, hi = A.need * 2;
+    while (!covers(hi) && hi < 1e5) hi *= 2;
+    for (var it = 0; it < 30; it++) {
+      var mid = Math.sqrt(lo * hi);
+      if (covers(mid)) hi = mid; else lo = mid;
+    }
+    var full = hi * 1.15;
     var LOG_FULL = Math.log(full);
 
     var stagePat = ctx.createPattern(tiles.stage, "repeat");
@@ -670,7 +704,7 @@
     b.style.visibility = "hidden"; // the canvas copy sits exactly on top and takes over
     var poured = still
       ? flood.run(true, 1, function (k) { return k; })
-      : wait(240).then(function () { return flood.run(true, 820, function (k) { return k * k * (3 - 2 * k); }); });
+      : wait(240).then(function () { return flood.run(true, 820, zoomEase); });
 
     poured.then(function () {
       flood.churn(still ? 0 : 700);
@@ -701,7 +735,7 @@
     wait(still ? 0 : 280).then(function () {
       if (leavingPlanes) leavingPlanes.destroy();
       leaving.remove();
-      var drained = flood.run(false, still ? 1 : 620, function (k) { return k * k * (3 - 2 * k); });
+      var drained = flood.run(false, still ? 1 : 620, zoomEase);
       return Promise.all([drained, wait(still ? 0 : 120).then(function () { return pull(items, false, 460); })]);
     }).then(function () {
       flood.remove();
