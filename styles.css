@@ -843,7 +843,7 @@ html.dark .reading-group-notes .footnotes {
   animation-play-state: paused;
 }
 html.dark .egg-b {
-  background-image: var(--egg-shimmer), var(--egg-grain-lit);
+  background-image: var(--egg-shimmer), var(--egg-grain-stage);
 }
 
 .egg-b:hover,

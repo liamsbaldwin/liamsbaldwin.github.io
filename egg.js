@@ -86,13 +86,12 @@
 
   (function texture() {
     tiles.stage = grainTile(STAGE_GREY, STAGE_GRAIN);
-    // While hovered the B is a lighter, grainier version of that grey so the
-    // texture shows; on the dark page it is lit up further so it stays visible.
-    // Once clicked it settles into the stage grey as it grows.
+    // On the light page the hovered B is a lighter, grainier version of that grey
+    // so the texture shows, and settles into the stage grey as it grows. On the
+    // dark page it is the stage grain itself, already the colour it ends on.
     tiles.hover = grainTile(88, 34);
-    tiles.lit = grainTile(165, 44);
     root.style.setProperty("--egg-grain", cssUrl(tiles.hover));
-    root.style.setProperty("--egg-grain-lit", cssUrl(tiles.lit));
+    root.style.setProperty("--egg-grain-stage", cssUrl(tiles.stage));
     root.style.setProperty("--egg-shimmer", cssUrl(shimmerTile()));
 
     // Stop-motion keyframes, about 20 a second: the grain jumps to a new place
@@ -274,7 +273,7 @@
     var LOG_FULL = Math.log(full);
 
     var stagePat = ctx.createPattern(tiles.stage, "repeat");
-    var litPat = ctx.createPattern(dark ? tiles.lit : tiles.hover, "repeat");
+    var hoverPat = ctx.createPattern(tiles.hover, "repeat");
     var size = TILE * DENSITY, step = -1, ox = 0, oy = 0;
 
     function draw(now, k) {
@@ -288,10 +287,11 @@
       ctx.translate(-ox, -oy);
       ctx.fillStyle = stagePat;
       ctx.fillRect(0, 0, canvas.width + size, canvas.height + size);
-      // The B starts in its lighter hover grain and settles into the stage grey as it grows.
-      if (k < 0.6) {
+      // On the light page the B starts in its lighter hover grain and settles
+      // into the stage grey as it grows.
+      if (!dark && k < 0.6) {
         ctx.globalAlpha = 1 - k / 0.6;
-        ctx.fillStyle = litPat;
+        ctx.fillStyle = hoverPat;
         ctx.fillRect(0, 0, canvas.width + size, canvas.height + size);
         ctx.globalAlpha = 1;
       }
