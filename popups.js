@@ -16,6 +16,7 @@
   if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
   const scriptUrl = document.currentScript ? document.currentScript.src : location.href;
+  const siteRoot = new URL(".", scriptUrl); // the site lives wherever popups.js does
   const annotationsUrl = new URL("annotations.json", scriptUrl).href;
   const siteIconUrl = new URL("icon-32.png", scriptUrl).href;
 
@@ -170,8 +171,12 @@
   }
 
   async function loadLocal(url, a) {
-    // Absolute links to liambald.win still preview the local copy when testing.
-    const fetchUrl = new URL(url.pathname + url.search, location.origin);
+    // Absolute links to liambald.win still preview the local copy when testing,
+    // and root-relative paths resolve against the site root (for previews hosted
+    // in a subfolder).
+    const fetchUrl = url.origin === siteRoot.origin && url.pathname.startsWith(siteRoot.pathname)
+      ? url
+      : new URL(url.pathname.replace(/^\//, "") + url.search, siteRoot);
     const res = await fetch(fetchUrl);
     if (!res.ok) throw new Error("local " + res.status);
     const doc = new DOMParser().parseFromString(await res.text(), "text/html");
