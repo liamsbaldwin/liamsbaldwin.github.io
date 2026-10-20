@@ -1,0 +1,276 @@
+/* ── Link previews (see popups.js) ── */
+
+:root {
+  --popup-bg: #ffffff;
+  --popup-border: rgba(0, 0, 0, 0.18);
+  --popup-rule: rgba(0, 0, 0, 0.1);
+  --popup-muted: rgba(0, 0, 0, 0.5);
+  --popup-shadow: 0 10px 34px rgba(0, 0, 0, 0.16);
+  --popup-font-size: calc(var(--body-font-size) * 0.8);
+}
+
+html.dark {
+  --popup-bg: #1f1f1f;
+  --popup-border: rgba(255, 255, 255, 0.2);
+  --popup-rule: rgba(255, 255, 255, 0.1);
+  --popup-muted: rgba(255, 255, 255, 0.5);
+  --popup-shadow: 0 10px 34px rgba(0, 0, 0, 0.55);
+}
+
+/* Inline icon after links to other sites */
+a[data-link-icon-type]::after {
+  display: inline-block;
+  margin-left: 0.16em;
+  line-height: 1;
+  vertical-align: 0.45em;
+  text-decoration: none;
+}
+
+a[data-link-icon-type="text"]::after {
+  content: attr(data-link-icon);
+  font-size: 0.55em;
+  letter-spacing: 0.02em;
+}
+
+a[data-link-icon-name="wikipedia"]::after,
+.popup-icon[data-name="wikipedia"] {
+  font-family: "Linux Libertine", "Hoefler Text", Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+}
+
+a[data-link-icon-name="wikipedia"]::after {
+  font-size: 0.68em;
+  vertical-align: 0.32em;
+}
+
+a[data-link-icon-type="svg"]::after,
+.popup-icon-svg {
+  content: "";
+  width: 0.55em;
+  height: 0.55em;
+  background-color: currentColor;
+  -webkit-mask: var(--link-icon) center / contain no-repeat;
+  mask: var(--link-icon) center / contain no-repeat;
+}
+
+/* The popup itself */
+.popup {
+  position: absolute;
+  width: min(600px, calc(100vw - 24px));
+  max-height: min(480px, calc(100vh - 24px));
+  display: flex;
+  flex-direction: column;
+
+  background: var(--popup-bg);
+  color: var(--text);
+  border: 1px solid var(--popup-border);
+  box-shadow: var(--popup-shadow);
+
+  font-size: var(--popup-font-size);
+  line-height: 1.5;
+
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 140ms ease, transform 140ms ease,
+    background-color 220ms ease, color 220ms ease;
+}
+
+.popup.visible {
+  opacity: 1;
+  transform: none;
+}
+
+.popup.popup-compact {
+  width: min(420px, calc(100vw - 24px));
+}
+
+/* Title bar */
+.popup-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px 5px 12px;
+  border-bottom: 1px solid var(--popup-rule);
+  font-size: 15px;
+  line-height: 1.3;
+  flex: none;
+}
+
+.popup-icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  color: #1a73e8;
+}
+
+.popup-icon img {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.popup-icon-text {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.popup-icon-text[data-name="wikipedia"] {
+  font-size: 16px;
+}
+
+.popup-icon-svg {
+  width: 13px;
+  height: 13px;
+  min-width: 0;
+}
+
+.popup-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.popup-source {
+  flex: none;
+  font-size: 13px;
+  color: var(--popup-muted);
+}
+
+.popup-close {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--popup-muted);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.popup-close:hover {
+  color: var(--text);
+  background: var(--popup-rule);
+}
+
+/* Body: same typography as the site, just a size smaller */
+.popup-body {
+  overflow-y: auto;
+  padding: 14px 18px 4px;
+  overscroll-behavior: contain;
+}
+
+.popup-body p {
+  margin: 0 0 12px 0;
+}
+
+.popup-body h2 {
+  margin: 20px 0 8px;
+  font-size: 1.3em;
+}
+
+.popup-body h3 {
+  margin: 16px 0 6px;
+  font-size: 1.12em;
+}
+
+.popup-body blockquote {
+  margin: 14px 0;
+  padding-left: 16px;
+}
+
+.popup-body .footnotes {
+  margin-top: 20px;
+  padding-top: 12px;
+}
+
+.popup-meta,
+.popup-loading,
+.popup-empty {
+  color: var(--popup-muted);
+  font-size: 0.88em;
+}
+
+.popup-body .popup-meta {
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.popup-empty {
+  padding-bottom: 10px;
+}
+
+.popup-thumb {
+  float: right;
+  max-width: 140px;
+  max-height: 180px;
+  margin: 2px 0 8px 14px;
+  border: 1px solid var(--popup-rule);
+}
+
+/* Own pages scaled down to fit */
+.popup-page .layout {
+  display: block;
+}
+
+.popup-page .photo-col {
+  float: right;
+  transform: none;
+  margin: 0 0 8px 14px;
+}
+
+.popup-page .photo {
+  width: 120px;
+  height: 150px;
+}
+
+.popup-page .photo-caption {
+  display: none;
+}
+
+.popup-page .book-row {
+  gap: 14px;
+}
+
+.popup-page .book-card {
+  width: 104px;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+}
+
+.popup-page .book-overlay {
+  padding: 6px;
+}
+
+.popup-page .book-title {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.popup-page .book-author {
+  font-size: 11px;
+}
+
+.popup-page .review-link {
+  opacity: 1;
+  font-size: 11px;
+}
+
+.popup-page .recent-desc {
+  display: none;
+}
+
+.popup-page .recent-expand {
+  display: none;
+}
+
+.popup-page .recent-row {
+  gap: 12px;
+}
