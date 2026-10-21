@@ -464,8 +464,11 @@
     });
 
     // The stack turns about its own centre.
+    // The pivot carries the small cursor tilt; the stack inside it carries the
+    // turn you give it by dragging, so the two never fight.
+    var pivot = new THREE.Group();
+    pivot.position.set(CENTRE[0], 0, -CENTRE[1]);
     var cube = new THREE.Group();
-    cube.position.set(CENTRE[0], 0, -CENTRE[1]);
     var xAxis = new THREE.Vector3(Math.sin(TILT), 0, Math.cos(TILT));
     var yAxis = new THREE.Vector3(0, 1, 0);
     var zAxis = new THREE.Vector3().crossVectors(xAxis, yAxis);
@@ -482,13 +485,14 @@
       cube.add(sheet);
       sheets.push({ mesh: sheet, mat: mat, z: -depthAt });
     }
-    scene.add(cube);
+    pivot.add(cube);
+    scene.add(pivot);
 
     // The entrance: sheets slide in one after another from behind the stack
-    // while the whole thing swings round to the resting view.
+    // while the whole thing makes a slight turn and settles into the resting view.
     var intro = null;
     if (!still) {
-      var tilt = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0.35, 1, 0.15).normalize(), -1.1);
+      var tilt = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0.18, 1, 0).normalize(), -0.42);
       intro = { start: performance.now(), from: home.clone().premultiply(tilt), turning: true };
       cube.quaternion.copy(intro.from);
       sheets.forEach(function (sh) { sh.mat.uniforms.uOpacity.value = 0; });
@@ -630,11 +634,35 @@
 
     resetBtn.addEventListener("click", resetView);
 
+    // The wiggle: the stack leans a few degrees toward the cursor, following it
+    // on a slightly springy lag, and drifts back to centre when the cursor leaves.
+    var LEAN_Y = 0.16, LEAN_X = 0.1;  // radians at the edge of the window
+    var lean = { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 };
+    function onLean(e) {
+      if (e.pointerType === "touch" || reduceMotion.matches) return;
+      lean.ty = (e.clientX / window.innerWidth - 0.5) * 2 * LEAN_Y;
+      lean.tx = (e.clientY / window.innerHeight - 0.5) * 2 * LEAN_X;
+    }
+    function onLeave() { lean.tx = lean.ty = 0; }
+    window.addEventListener("pointermove", onLean);
+    document.documentElement.addEventListener("pointerleave", onLeave);
+    function stepLean(dt) {
+      var STIFF = 55, DAMP = 9; // a touch under critical damping, so it settles with a small sway
+      for (var n = 0, h = dt / 1000 / 4; n < 4; n++) {
+        lean.vx += (STIFF * (lean.tx - lean.x) - DAMP * lean.vx) * h;
+        lean.vy += (STIFF * (lean.ty - lean.y) - DAMP * lean.vy) * h;
+        lean.x += lean.vx * h;
+        lean.y += lean.vy * h;
+      }
+      pivot.rotation.set(lean.x, lean.y, 0);
+    }
+
     var raf = 0;
     var prev = performance.now();
     function frame(now) {
       var dt = Math.min(now - prev, 50);
       prev = now;
+      stepLean(dt);
       if (intro) {
         var t = now - intro.start, settled = true;
         sheets.forEach(function (sh, i) {
@@ -644,8 +672,8 @@
           sh.mat.uniforms.uOpacity.value = Math.min(1, k * 1.6);
         });
         if (intro.turning) {
-          var r = clamp(t / 1400, 0, 1);
-          cube.quaternion.copy(intro.from).slerp(home, easeOut(r));
+          var r = clamp(t / 1800, 0, 1);
+          cube.quaternion.copy(intro.from).slerp(home, 1 - Math.pow(1 - r, 4));
           if (r < 1) settled = false;
           else intro.turning = false;
         }
@@ -670,6 +698,8 @@
       destroy: function () {
         cancelAnimationFrame(raf);
         window.removeEventListener("resize", resize);
+        window.removeEventListener("pointermove", onLean);
+        document.documentElement.removeEventListener("pointerleave", onLeave);
         sheets.forEach(function (sh) { sh.mat.dispose(); });
         baseMaterial.dispose();
         sheetGeometry.dispose();
